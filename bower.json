@@ -1,0 +1,40 @@
+{
+  "name": "Taaabs_Documentation",
+  "version": "0.0.1",
+  "description": "YOLO.",
+  "main": "",
+  "keywords": [
+    "TAAABS"
+  ],
+  "authors": [
+    "Remi Casado"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "polymer"            : "Polymer/polymer#<2.*",
+    "app-layout"         : "PolymerElements/app-layout#<2.*",
+    "iron-collapse"      : "PolymerElements/iron-collapse#<2.*",
+    "iron-icon"          : "PolymerElements/iron-icon#<2.*",
+    "iron-icons"         : "PolymerElements/iron-icons#<2.*",
+    "iron-pages"         : "PolymerElements/iron-pages#<2.*",
+    "paper-input"        : "PolymerElements/paper-input#<2.*",
+    "paper-styles"       : "PolymerElements/paper-styles#<2.*",
+    "paper-tabs"         : "PolymerElements/paper-tabs#<2.*",
+    "app-route"          : "PolymerElements/app-route#<2.*",
+    "iron-component-page": "PolymerElements/iron-component-page#<2.*",
+    "ktbs-for-la"        : "TaaabsElements/ktbs-for-la"
+  },
+  "overrides": {
+    "PolymerElements/iron-resizable-behavior": {
+      "dependencies": {},
+      "devDependencies": {}
+    }
+  }
+}

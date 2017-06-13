@@ -1,0 +1,343 @@
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+
+<dom-module id="taaabs-base-overview">
+  <template>
+    <!-- include the style module by name -->
+    <!-- <style include="taaabs-dark-theme"></style> -->
+    <style include="taaabs-theme"></style>
+    <style>
+      :host {
+        display: block;
+      }
+      :host #list-div div:nth-child(2n){
+        background-color: var(--paper-grey-100);
+      }
+
+      :host #list-div div:hover{
+        background-color: var(--paper-grey-200);
+      }
+    </style>
+
+    <div id="list-div" class="flex-vertical fit-width">
+      <template is="dom-repeat" items="[[_bases]]" sort="_sort">
+        <div class="flex-horizontal fit-width">
+          <div class="flexchild fgBlack hoverable clickable" on-click="_onOpenClick" title="[[localize('open-here', 'name', item.idName)]]">
+            <span> [[item.idName]]  </span>
+            <span> [[item.label]]   </span>
+            <span> [[item.comment]] </span>
+          </div>
+          <div style="width: 40px">
+            <iron-icon class="flexchild fgBlack fgBlackH hoverable clickable" title="[[localize('open-in-browser', 'name', item.idName)]]"
+                       icon="icons:open-in-browser" on-click="_onOpenInBrowerClick"></iron-icon>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * `<taaabs-base-overview>` is a graphical element that load and display each base of a ktbs.
+     *
+     * Example:
+     *
+     *     <taaabs-base-overview ktbs-url="https://localhost:3000/ktbs/" language="{{i18n}}">
+     *     </taaabs-base-overview>
+     *
+     * Source files: <a href="https://github.com/TaaabsElements/taaabs-base-overview" target="_blank">taaabs-base-overview</a>
+     */
+    Polymer({
+      is: 'taaabs-base-overview',
+
+      /**
+       * Fired if a base has been selected.
+       *
+       * Returns an object :
+       *
+       *     {
+       *       "baseId": <url_of_the_base>,
+       *       "which": <mouse_button>
+       *     }
+       *
+       * If mouse_button = 2, then it's a middle-click
+       *
+       * @event base-selected
+       */
+
+      properties: {
+        /**
+         * Url of the current kTBS.
+         *
+         * @attribute ktbsUrl
+         * @type String
+         */
+        ktbsUrl: {
+          type: String,
+          notify: true,
+        },
+
+        /**
+         * Set to true if the taaabs-base-overview must work with a `taaabs-resource-loader`. False otherwise.
+         *
+         * @attribute taaabsCentralLoading
+         * @type Boolean
+         */
+        taaabsCentralLoading: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        /**
+         * Internationalization.
+         * fr, en.
+         *
+         * @attribute language
+         * @type String
+         */
+        language: {
+          type: String,
+          notify: true
+        },
+
+        loadBaseInformations: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        /**
+         * A Samotrace.kTBS object.
+         *
+         * @attribute _ktbs
+         * @type Object
+         */
+        _ktbs: {
+          type: Object,
+          notify: true,
+          value: function() {
+            return {};
+          }
+        },
+
+        /**
+         * The different existing bases on the ktbs.
+         *
+         * @attribute _bases
+         * @type Array
+         */
+        _bases: {
+          type: Array,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * A loaded base ready to be formated.
+         *
+         * @attribute _tmpBase
+         * @type Object
+         */
+        _tmpBase: {
+          type: Object,
+          notify: true,
+          observer: '_tmpBaseLoaded'
+        },
+
+        /**
+         * List of the bases unloaded (raw from ktbs.get).
+         *
+         * @attribute _tmpBases
+         * @type Array
+         */
+        _tmpBases: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+
+        resources: {
+          type: Object,
+          value: function(){
+            return {
+              'en': {
+                'open-in-browser': 'Explore {name} in a new tab',
+                'open-here': 'Explore {name} here'
+              },
+              'fr': {
+                'open-in-browser': 'Explorer {name} dans un nouvel onglet',
+                'open-here': 'Explorer {name} ici'
+              }
+            }
+          }
+        },
+
+        language: {
+          type: String,
+          value: 'en'
+        }
+      },
+
+      listeners: {
+        'loadBase': '_loadBase',
+      },
+
+      behaviors: [
+        Polymer.AppLocalizeBehavior
+      ],
+
+      ready: function() {},
+
+      attached: function() {},
+
+      /**
+       * Triggered when `ktbsUrl` changes.
+       * Get each base of the ktbs object.
+       *
+       * @method refresh
+       */
+      refresh: function() {
+        // Reset the bases.
+        this.set('_bases', []);
+
+        // We check if ktbsUrl isn't empty ( setting ktbsUrl to "" triggers a change).
+        if (this.ktbsUrl !== "") {
+
+          // We set `_ktbs` as a ktbs object.
+          this.set('_ktbs', new Samotraces.Ktbs.Ktbs(this.ktbsUrl));
+
+          // We load the ktbs in order to retrieve the bases.
+          this._ktbs.load()
+            .then(function() {
+
+              if(this.loadBaseInformations){
+                // If we're using a central loading, we let it manage the loadings.
+                if (this.taaabsCentralLoading) {
+                  this._ktbs.iter_bases()
+                    .forEach(function(base) {
+
+                      this.fire('GET_RESOURCE', {
+                        url: base.uri,
+                        obj: "_tmpBase"
+                      });
+
+                    }.bind(this))
+                    .then(function() {})
+                    .catch(function(err) {
+                      console.log(err);
+                    })
+                }
+                // Otherwise, we load each base manually.
+                else {
+                  this._ktbs.iter_bases()
+                    .forEach(function(base) {
+                      this.push('_tmpBases', new Samotraces.Ktbs.Resource(base.uri, base.uri));
+                    }.bind(this))
+                    .then(function() {
+                      // Once we've created every base, we load them.
+                      this._loadEachTemporaryBase();
+                    }.bind(this))
+                    .catch(function(err) {
+                      console.log(err);
+                    })
+                }
+              }
+              else{
+                for(var i = 0; i < this._ktbs.bases.length; i++){
+                  this.push('_bases',{
+                    'idName': this._ktbs.bases[i].replace('/', '')
+                  });
+                }
+              }
+            }.bind(this))
+            .catch(function(err) {
+              console.log(err);
+            })
+        }
+
+      },
+
+      /**
+       * Load each raw base.
+       *
+       * @method _loadEachTemporaryBase
+       */
+      _loadEachTemporaryBase: function() {
+        if (this._tmpBases.length > 0) {
+          var base = this._tmpBases[0];
+          base.load()
+            .then(function(base) {
+              // We set tmpBase to let `_tmpBaseLoaded` format the base.
+              this.set('_tmpBase', base);
+              // We load the others bases.
+              this.splice('_tmpBases', 0, 1);
+              this._loadEachTemporaryBase();
+            }.bind(this))
+            .catch(function(err) {
+              console.log(err);
+              // We load the others anyway.
+              this.splice('_tmpBases', 0, 1);
+              this._loadEachTemporaryBase();
+            }.bind(this));
+        } else {
+          // ???
+        }
+      },
+
+      /**
+       * Triggered when `_tmpBase` changes. Format the base and push it into `_bases`.
+       *
+       * @method _tmpBaseLoaded
+       */
+      _tmpBaseLoaded: function() {
+        if (this._tmpBase) {
+          this._tmpBase.idName = this._tmpBase.id.split('/');
+          this._tmpBase.idName = this._tmpBase.idName[this._tmpBase.idName.length - 2];
+          this.push('_bases', JSON.parse(JSON.stringify(this._tmpBase)));
+        }
+
+      },
+
+      /**
+       * Triggered when a <tr> of a base is clicked.
+       * Fires `baseSelected`.
+       *
+       * @method _baseClicked
+       */
+      _onOpenClick: function(e) {
+        this.fire('base-selected', {
+          "baseId": e.model.item.idName+'/',
+          "baseUri": e.model.item.uri,
+          "where": "here"
+        });
+      },
+
+      _onOpenInBrowerClick: function(e) {
+        this.fire('base-selected', {
+          "baseId": e.model.item.idName+'/',
+          "baseUri": e.model.item.uri,
+          "where": "new"
+        });
+      },
+
+      /**
+       * Sort two elements in alphabetic order.
+       *
+       * @method _sort
+       */
+      _sort: function(a, b) {
+        if (a.idName.toLowerCase() < b.idName.toLowerCase())
+          return -1;
+        else if (a.idName.toLowerCase() > b.idName.toLowerCase())
+          return 1;
+        else
+          return 0;
+      }
+    });
+  </script>
+</dom-module>

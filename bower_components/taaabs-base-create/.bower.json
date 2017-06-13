@@ -1,0 +1,39 @@
+{
+  "name": "taaabs-base-create",
+  "description": "A graphical element for creating a new base onto a kTBS.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-base-create.git"
+  },
+  "main": "taaabs-base-create.html",
+  "license": "https://github.com/TaaabsElements/taaabs-base-create/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "iron-pages": "PolymerElements/iron-pages#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-base-create",
+  "_release": "80ad535049",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "80ad53504967e0d9bb9980d56756d5ec7e13f3d2"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-base-create.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-base-create"
+}

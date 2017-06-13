@@ -1,0 +1,38 @@
+{
+  "name": "sortable-list",
+  "description": "Graphical element that displays a list sortable with drag and drop.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yepikae/sortable-list.git"
+  },
+  "main": "sortable-list.html",
+  "license": "https://github.com/Yepikae/sortable-list/LICENSE",
+  "dependencies": {
+    "polymer": "polymer/polymer",
+    "paper-checkbox": "PolymerElements/paper-checkbox",
+    "taaabs-themes": "TaaabsElements/taaabs-themes"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/Yepikae/sortable-list",
+  "_release": "0244f3b44b",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "0244f3b44bf61150fbf4fa8aad4a7e73d7aad31a"
+  },
+  "_source": "https://github.com/Yepikae/sortable-list.git",
+  "_target": "*",
+  "_originalSource": "Yepikae/sortable-list"
+}

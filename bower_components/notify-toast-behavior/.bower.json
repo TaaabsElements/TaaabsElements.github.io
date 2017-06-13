@@ -1,0 +1,38 @@
+{
+  "name": "notify-toast-behavior",
+  "description": "This Polymer Behavior aims to simplify sending notification messages to a user of any Polymer web application.",
+  "keywords": [
+    "web-components",
+    "polymer"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yepikae/notify-toast-behavior.git"
+  },
+  "main": "notify-toast-behavior.html",
+  "license": "https://github.com/Yepikae/notify-toast-behavior/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "paper-toast": "PolymerElements/paper-toast#<2.*",
+    "iron-icon": "PolymerElements/iron-icon#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/Yepikae/notify-toast-behavior",
+  "_release": "556ae1110a",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "556ae1110a61e7e65e93c2000dbc68a32b579daf"
+  },
+  "_source": "https://github.com/Yepikae/notify-toast-behavior.git",
+  "_target": "*",
+  "_originalSource": "Yepikae/notify-toast-behavior"
+}

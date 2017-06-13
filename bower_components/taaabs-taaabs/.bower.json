@@ -1,0 +1,36 @@
+{
+  "name": "taaabs-taaabs",
+  "description": "Main container for all taaabs elements.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-taaabs.git"
+  },
+  "main": "taaabs-taaabs.html",
+  "license": "https://github.com/TaaabsElements/taaabs-taaabs/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-taaabs",
+  "_release": "b63d87c05c",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "b63d87c05cbf08f1f46dff20b780848446ed2a3a"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-taaabs.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-taaabs"
+}

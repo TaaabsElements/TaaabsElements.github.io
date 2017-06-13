@@ -1,0 +1,40 @@
+{
+  "name": "taaabs-base-details",
+  "description": "A graphical element that load and display the informations of a base.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-base-details.git"
+  },
+  "main": "taaabs-base-details.html",
+  "license": "https://github.com/TaaabsElements/taaabs-base-details/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "taaabs-base-create": "TaaabsElements/taaabs-base-create",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "iron-pages": "PolymerElements/iron-pages#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-base-details",
+  "_release": "b5b498fa39",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "b5b498fa39397ece465841e347f88e366c93f967"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-base-details.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-base-details"
+}

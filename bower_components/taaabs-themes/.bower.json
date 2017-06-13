@@ -1,0 +1,39 @@
+{
+  "name": "taaabs-themes",
+  "description": "CSS themes.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-themes.git"
+  },
+  "main": "taaabs-theme.html",
+  "license": "https://github.com/TaaabsElements/taaabs-themes/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "neon-animation": "PolymerElements/neon-animation#<2.*",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#<2.*",
+    "paper-styles": "PolymerElements/paper-styles#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-themes",
+  "_release": "cf12352b4e",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "cf12352b4ea067e1a2d47deed8b5ebeb57366b6e"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-themes.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-themes"
+}

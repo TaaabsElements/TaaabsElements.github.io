@@ -1,0 +1,252 @@
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="../notify-toast-behavior/notify-toast-behavior.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html"
+<link rel="import" href="../taaabs-csv-collector/taaabs-csv-collector-behavior.html">
+<dom-module id="taaabs-ctkm-model-preview">
+  <template>
+    <style include="taaabs-theme"></style>
+    <style>
+      :host{
+        width: 100%;
+      }
+
+      :host #container{
+        margin: 0 auto;
+        max-width: 1000px;
+      }
+
+      :host .subTitle{
+        text-transform: uppercase;
+        font-weight: normal;
+        font-size: 10px;
+      }
+
+      :host #createBtn{
+        padding: 1em 5em 1em 5em;
+        margin: 0 auto;
+        display: block;
+      }
+
+      :host .type-cell{
+        background-color: var(--paper-grey-200);
+      }
+
+
+    </style>
+
+    <div id="container">
+      <h4> Create your kTBS model ( <span class="subTitle">[[csvSchema.id]]</span> )</h4>
+
+      <div class="button" id="createBtn" on-click="_submit">Create</div>
+
+      <div id="typesRow" class="swag-scroll" style="display:block; max-width: 100%; overflow-x: auto;margin-top: 2em">
+        <div style="position: relative; width: 100%;  display: table;">
+          <template is="dom-repeat" items="[[csvSchema.typesObjects]]">
+            <template is="dom-if" if="[[item.enabled]]">
+              <div style="display: table-cell; min-width: 300px">
+                <div class="type-cell" style=" display:block; padding: 1em; width: 100%;">
+                  <span> [[item.name]] ( [[item.title]])</span>
+                </div>
+              </template>
+  </div>
+  </template>
+  </div>
+  </div>
+  <div id="attributesRow" class="swag-scroll" style="display:block; max-width: 100%; overflow-x: hidden; overflow-y: auto; max-height: 500px;">
+    <div style="position: relative; width: 100%;  display: table;">
+      <template is="dom-repeat" items="[[csvSchema.typesObjects]]">
+            <template is="dom-if" if="[[item.enabled]]">
+              <div style="display: table-cell; min-width: 300px">
+                <template is="dom-repeat" items="[[item.attributes]]">
+                  <template is="dom-if" if="[[item.enabled]]">
+                    <div style="display:block; padding: 1em; border-bottom: solid 1px grey;border-left: solid1px grey; width: 100%;">
+                      <span> <b>[[item.name]]</b> </span><br/>
+                      <span> [[item.datatype]] </span>
+                    </div>
+                  </template>
+      </template>
+      </template>
+    </div>
+    </template>
+  </div>
+  </div>
+  </div>
+
+  <!-- Notify toast -->
+  <paper-toast id="__notify_toast__" style="background-color:rgba(0,0,0,0.67)" duration=0> </paper-toast>
+
+  </template>
+  <script>
+    /* global Polymer */
+
+    /**
+     *
+     */
+    Polymer({
+      is: 'taaabs-ctkm-model-preview',
+
+      properties: {
+
+        csvSchema: {
+          type: Object,
+        },
+
+        csvSchemas: {
+          type: Array
+        }
+
+      },
+
+      behaviors: [
+        Polymer.AppLocalizeBehavior,
+        NotifyToastBehavior,
+        TaaabsCSVCollectorBehavior
+      ],
+
+      ready: function() {
+        // Link the scroll status between the different panes.
+        this.$.typesRow.addEventListener('scroll', function(e) {
+          this.$.attributesRow.scrollLeft = this.$.typesRow.scrollLeft;
+        }.bind(this))
+      },
+
+      refresh: function(schema){
+        this.set('csvSchema',null);
+        this.set('csvSchema', schema);
+      },
+
+      _submit: function() {
+        for(var i = 0; i < this.csvSchemas.length; i++){
+          if(this.csvSchemas[i].id === this.csvSchema.id){
+            this.csvSchema[i] = this.csvSchema;
+          }
+        }
+        var id = this.notifyToast('Uploading import configuration', {
+          type: 'Loading',
+          timeout: -1
+        });
+        this._saveSchemaOntoBase(this.csvSchemas, this.base).then(function(){
+          this.closeToast(id);
+          this._createModel();
+        }.bind(this)).catch(function(err){
+          console.log(err);
+        });
+
+        /*
+
+        that.base.modify_attributes(new_attr)
+          .then(function(data) {
+            that._createModel();
+          })
+          .catch(function(data) {
+            console.log(data)
+          });
+
+          */
+
+      },
+
+      _createModel: function() {
+        var id = this.notifyToast('Creating the new trace model, named '+this.csvSchema.id, {
+          type: 'Loading',
+          timeout: -1
+        });
+
+        var unit = null;
+        if (this.csvSchema.time.beginColumn === -1)
+          unit = 'sequence';
+
+        this.base.create_model(this.csvSchema.id, this.csvSchema.label, "A model programmatically created from a taaabs csv collector.", unit)
+          .then(function(model) {
+            console.log(model);
+
+            var _typeGraph = [];
+            var _attrGraph = [];
+
+            for (var i = 0; i < this.csvSchema.typesObjects.length; i++) {
+
+              if (this.csvSchema.typesObjects[i].enabled) {
+
+                var type = {
+                  "@id": '#' + this.csvSchema.typesObjects[i].name,
+                  "@type": "ObselType"
+                }
+
+                _typeGraph.push(type);
+
+                for (var j = 0; j < this.csvSchema.typesObjects[i].attributes.length; j++) {
+                  if (this.csvSchema.typesObjects[i].attributes[j].enabled) {
+                    var exists = false;
+                    for (var k = 0; k < _attrGraph.length; k++) {
+                      if (_attrGraph[k]['@id'] === '#' + this.csvSchema.typesObjects[i].attributes[j].name) {
+                        _attrGraph[k]['hasAttributeObselType'].push('#' + this.csvSchema.typesObjects[i].name);
+                        exists = true;
+                      }
+                    }
+                    if (!exists) {
+                      var attr = {
+                        "@id": '#' + this.csvSchema.typesObjects[i].attributes[j].name.replace(' ', ''),
+                        "@type": "AttributeType",
+                        "hasAttributeObselType": ['#' + this.csvSchema.typesObjects[i].name],
+                        "hasAttributeDatatype": [this.csvSchema.typesObjects[i].attributes[j].datatype],
+                      }
+                      _attrGraph.push(attr);
+                    }
+
+                  }
+
+                }
+              }
+
+            }
+            if (this.csvSchema.typesObjects.length === 0) {
+              // TODO, ADD CONDITION....
+              var type = {
+                "@id": '#defaultType',
+                "@type": "ObselType"
+              }
+
+              _typeGraph.push(type);
+
+              for (var j = 0; j < this.csvSchema.columns.length; j++) {
+                var attr = {
+                  "@id": '#' + this.csvSchema.columns[j].name,
+                  "@type": "AttributeType",
+                  "hasAttributeObselType": ['#defaultType'],
+                  "hasAttributeDatatype": ['xsd:string'],
+                }
+                _attrGraph.push(attr);
+              }
+            }
+
+            model.load()
+              .then(function() {
+                var graph = [];
+                for (var i = 0; i < _typeGraph.length; i++)
+                  graph.push(_typeGraph[i]);
+                for (var i = 0; i < _attrGraph.length; i++)
+                  graph.push(_attrGraph[i]);
+                console.log(graph);
+                model.put_model(graph)
+                  .then(function() {
+                    console.log(model);
+                    this.closeToast(id);
+                    this.fire('MODEL_CREATED');
+                  }.bind(this))
+                  .catch(function(err) {
+                    console.log(err);
+                  })
+              }.bind(this))
+              .catch(function(err) {
+                console.log(err);
+              })
+          }.bind(this))
+          .catch(function(err) {
+            console.log(err);
+          })
+
+      },
+
+    });
+  </script>
+</dom-module>

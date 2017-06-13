@@ -1,0 +1,13 @@
+{
+  "name": "taaabs-resource-loader",
+  "homepage": "https://github.com/TaaabsElements/taaabs-resource-loader",
+  "_release": "94d3c5deca",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "94d3c5deca6685d0d2a55b8907cca079833b059d"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-resource-loader.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-resource-loader"
+}

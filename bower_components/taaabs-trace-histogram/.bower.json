@@ -1,0 +1,49 @@
+{
+  "name": "taaabs-trace-histogram",
+  "description": "Graphical element that displays an histogram showing the obsel count over time intervals.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-histogram.git"
+  },
+  "main": "taaabs-trace-histogram.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-histogram/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "paper-button": "PolymerElements/paper-button#<2.*",
+    "paper-listbox": "PolymerElements/paper-listbox#<2.*",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#<2.*",
+    "paper-item": "PolymerElements/paper-item#<2.*",
+    "paper-input": "PolymerElements/paper-input#<2.*",
+    "paper-checkbox": "PolymerElements/paper-checkbox#<2.*",
+    "paper-spinner": "PolymerElements/paper-spinner#<2.*",
+    "google-chart": "GoogleWebComponents/google-chart#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "taaabs-themes": "TaaabsElements/taaabs-themes",
+    "taaabs-time-utilities": "TaaabsElements/taaabs-time-utilities",
+    "taaabs-trace-histogram": "TaaabsElements/taaabs-trace-histogram",
+    "notify-toast-behavior": "Yepikae/notify-toast-behavior"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-trace-histogram",
+  "_release": "3cfef425ed",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "3cfef425edf32c501b8e542e9a905c8cc5c1326c"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-trace-histogram.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-trace-histogram"
+}

@@ -1,0 +1,45 @@
+{
+  "name": "taaabs-csv-schema",
+  "description": "A graphical element in which the user can edit the properties of a trace csv file.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-csv-schema.git"
+  },
+  "main": "taaabs-csv-schema.html",
+  "license": "https://github.com/TaaabsElements/taaabs-csv-schema/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "taaabs-themes": "TaaabsElements/taaabs-themes",
+    "paper-input": "PolymerElements/paper-input#<2.*",
+    "paper-checkbox": "PolymerElements/paper-checkbox#<2.*",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#<2.*",
+    "iron-icon": "PolymerElements/iron-icon#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "notify-toast-behavior": "Yepikae/notify-toast-behavior",
+    "paper-button": "PolymerElements/paper-button#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-csv-schema",
+  "_release": "d34658bea2",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "d34658bea23a2d7ab88fccc1c617840b37ea86be"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-csv-schema.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-csv-schema"
+}

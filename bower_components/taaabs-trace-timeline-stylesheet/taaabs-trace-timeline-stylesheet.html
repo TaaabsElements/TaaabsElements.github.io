@@ -1,0 +1,779 @@
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+
+<dom-module id="taaabs-trace-timeline-stylesheet">
+
+  <template>
+    <style include="taaabs-theme"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      :host .tiny-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      :host .select-stylesheet-div {
+        transition: background-color ease-in-out 0.3s;
+      }
+
+      :host .select-stylesheet-div:hover {
+        background-color: var(--paper-grey-100);
+      }
+    </style>
+
+    <div class="flex-horizontal" style="padding:5px">
+      <div class="flexchild">
+        <span style="font-size: 20px">[[currentStylesheet.name]]</span>
+      </div>
+      <div style="width: 30px">
+        <iron-icon class="clickable fgBlack fgBlackH hoverable" icon="icons:expand-more"
+                   title="[[localize('expand')]]"               on-click="_onTemplateMenuClick">
+        </iron-icon>
+      </div>
+    </div>
+    <div style="padding:5px">
+      <p style="font-style:italic">[[currentStylesheet.description]]</p>
+    </div>
+    <iron-collapse id="templateOptionsCollapse">
+      <div class="content flex-equal-around-justified flex-horizontal">
+        <iron-icon icon="icons:add"           title="unavailable"              on-click="_onTemplateAddClick"      disabled></iron-icon>
+        <iron-icon icon="icons:edit"          title="unavailable"              on-click="_onTemplateEditClick"     disabled></iron-icon>
+        <iron-icon class="clickable fgBlack fgBlackH hoverable" icon="icons:file-download"
+                   title="[[localize('download-stylesheet')]]"  on-click="_onTemplateDownloadClick"></iron-icon>
+        <iron-icon class="clickable fgBlack fgBlackH hoverable" icon="icons:file-upload"
+                   title="[[localize('upload-stylesheet')]]"    on-click="_onTemplateUploadClick"></iron-icon>
+        <iron-icon class="clickable fgBlack fgBlackH hoverable" icon="icons:cloud-upload"
+                   title="[[localize('create-method')]]"        on-click="_onCreateMethodClick"></iron-icon>
+        <iron-icon icon="icons:close"         title="unavailable"              on-click="_onTemplateDeleteClick" disabled></iron-icon>
+      </div>
+    </iron-collapse>
+    <div class="flex-vertical" id="rules-container" style="padding: 5px"></div>
+
+
+  <paper-dialog id="uploadStyleModal">
+    <h2>[[localize('save-stylesheet')]]</h2>
+    <paper-input id="uploadStyleSheetIDInput" label="id" value="[[currentStylesheet.name]]">
+    </paper-input>
+    <span>Label</span>
+    <iron-autogrow-textarea id="uploadStyleSheetIDDescription" value="[[currentStylesheet.description]]"
+                            style="margin-left: 5px; margin-right: 24px">
+    </iron-autogrow-textarea>
+    <div class="buttons">
+      <paper-button dialog-dismiss>[[localize('cancel')]]</paper-button>
+      <paper-button dialog-confirm autofocus on-click="_onUploadStylesheet">[[localize('save')]]</paper-button>
+    </div>
+  </paper-dialog>
+
+  <paper-dialog id="createMethodModal">
+    <h2>Create your own method</h2>
+    <paper-input id="createMethodIDInput" label="id" value="[[currentStylesheet.name]]">
+    </paper-input>
+    <span>Label</span>
+    <iron-autogrow-textarea id="createMethodDescriptionInput" label="description" value="[[currentStylesheet.description]]"
+                            style="margin-left: 5px; margin-right: 24px">
+    </iron-autogrow-textarea>
+    <div class="buttons">
+      <paper-button dialog-dismiss>[[localize('cancel')]]</paper-button>
+      <paper-button dialog-confirm autofocus on-click="_onCreateMethod">[[localize('save')]]</paper-button>
+    </div>
+  </paper-dialog>
+
+  <paper-dialog id="downloadStylesheetModal">
+    <h2>[[localize('select-stylesheet')]]</h2>
+    <template is="dom-repeat" items="[[_stylesheetsList]]">
+      <div class="select-stylesheet-div clickable hoverable" on-click="_onStylesheetSelect">
+        <p>
+          <b>[[item.name]]</b> <br/>
+          <span style="font-style:italic">[[item.description]]</span>
+        </p>
+      </div>
+    </template>
+  </paper-dialog>
+
+  </template>
+
+
+  <script>
+    Polymer({
+      is: 'taaabs-trace-timeline-stylesheet',
+      properties: {
+
+        styleTemplate: {
+          type: Object,
+          notify: true,
+          value: null
+        },
+
+        model: {
+          type: Object,
+          notify: true,
+          value: null
+        },
+
+        colorForType: {
+          type: Array,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
+
+        _stylesheetsList: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+
+        _stylesheets: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+
+        _stylesheetsModified: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+
+        _styleName: {
+          type: String,
+          notify: true,
+          value: ""
+        },
+
+        _styleDescription: {
+          type: String,
+          notify: true,
+          value: ""
+        },
+
+        _predefined_colors_: {
+          type: Array,
+          value: function() {
+            return [
+              '#3F51B5', /* Indigo       */
+              '#FFEB3B', /* Yellow       */
+              '#FF5722', /* Deep Orange  */
+              '#4CAF50', /* Green        */
+              '#009688', /* Teal         */
+              '#9C27B0', /* Purple       */
+              '#CDDC39', /* Lime         */
+              '#FF9800', /* Orange       */
+              '#03A9F4', /* Light Blue   */
+              '#E91E63', /* Pink         */
+              '#F44336', /* Red          */
+              '#607D8B', /* Blue Grey    */
+            ];
+          }
+        },
+
+        /**
+         * The current stylesheet.
+         *
+         * @attribute currentStylesheet
+         * @type Object
+         */
+        currentStylesheet: {
+          type: Object,
+          notify: true,
+          value: null
+        },
+
+        resources: {
+          type: Object,
+          notify: true,
+          value: function(){
+            return {
+              "en": {
+                "expand":              "Toggle options",
+                "download-stylesheet": "Load an existing stylesheet",
+                "upload-stylesheet":   "Save the current stylesheet",
+                "create-method":       "Create a new method with the current stylesheet",
+                "move-up":             "Move up",
+                "move-down":           "Move down",
+                "visibility-toggle":    "Hide/show the obsels matching the rule",
+                "copy-rule":           "Copy the rule",
+                "edit-rule":           "Edit the rule",
+                "delete-rule":         "Delete the rule",
+                "select-stylesheet":   "Select your stylesheet",
+                "save-stylesheet":     "Save your stylesheet",
+                "save":                "Save",
+                "cancel":              "Cancel",
+                "create":              "Create"
+              },
+              "fr": {
+                "expand":              "Afficher les options",
+                "download-stylesheet": "Charger une stylesheet existante",
+                "upload-stylesheet":   "Sauvegarder la stylesheet actuelle",
+                "create-method":       "Créer une méthode à partir de la stylesheet actuelle",
+                "move-up":             "Monter la règle d'un niveau",
+                "move-down":           "Descendre la règle d'un niveau",
+                "visibility-toggle":    "Cacher/montrer les obsels respectant cette règle",
+                "copy-rule":           "Copier la règle",
+                "edit-rule":           "Éditer la règle",
+                "delete-rule":         "Supprimer la règle",
+                "select-stylesheet":   "Choisissez votre stylesheet",
+                "save-stylesheet":     "Sauvegardez votre stylesheet",
+                "save":                "Sauvegarder",
+                "cancel":              "Annuler",
+                "create":              "Créer"
+              }
+            }
+          }
+        },
+
+        /**
+         * Localization.
+         * fr, en.
+         *
+         * @attribute language
+         * @type String
+         */
+        language: {
+          type: String,
+          notify: true,
+          value: 'en'
+        }
+
+      },
+
+      behaviors: [
+        Polymer.AppLocalizeBehavior
+      ],
+
+      observers: [],
+
+      ready: function() {},
+
+      attached: function() {},
+
+      updateStylesheetCount: function(matches){
+        var rulesDivs = this.$['rules-container'].childNodes;
+        for(var i = 0; i < rulesDivs.length;  i++){
+          var distSpan = rulesDivs[i].childNodes[0].childNodes[0].childNodes[1];
+          distSpan.textContent = matches[i].local + ' / '+matches[i].overall;
+        }
+      },
+
+      /** ----------------------------------------------------------------------------
+      // MARK: Functions : DOM events.
+      **/
+
+      _onTemplateUploadClick: function(){
+        this.$.uploadStyleModal.open();
+      },
+
+      _onUploadStylesheet: function() {
+        this.currentStylesheet.name = this.$.uploadStyleSheetIDInput.value;
+        this.currentStylesheet.name.replace(/\s/g, '_');
+        this.currentStylesheet.description = this.$.uploadStyleSheetIDDescription.value;
+        this.model.addStylesheet(this.currentStylesheet).then(function(model){
+          this.refresh();
+        }.bind(this)).catch(function(err){
+          console.log(err);
+        });
+      },
+
+      _onCreateMethodClick: function(){
+        this.$.createMethodModal.open();
+      },
+
+      _onCreateMethod: function(){
+        var base = new Samotraces.Ktbs.Base(this.model.base_uri);
+        var id = this.$.createMethodIDInput.value.replace(/\s/g,'_');
+        var label = this.$.createMethodDescriptionInput.value;
+        var type_names = [];
+        var types = [];
+        for(var i = 0; i < this.currentStylesheet.rules.length; i++){
+          type_names.push('#'+this.currentStylesheet.rules[i].id.replace(/\s/g, '_'));
+          types.push({
+            "@id": type_names[i] ,
+            "@type": "ObselType"
+          });
+        }
+        base.create_model(id+"_model", "Model generated for the method "+this.model.base_uri+id+"/", null, this.model.model_properties['hasUnit'])
+            .then(function(model){
+              var g = [{
+                  "@id": this.model.base_uri+id+"_model",
+                  "@type": "TraceModel",
+                  "inBase": "./" ,
+                  "hasUnit": "millisecond" ,
+                  "label": "Model generated for the method "+this.model.base_uri+id+"/",
+                  "http://www.w3.org/2000/01/rdf-schema#comment": ""
+              }];
+              for(var i = 0; i < types.length; i++){
+                g.push(types[i]);
+              }
+              for(var i = 0; i < this.model.list_type_attributes.length; i++){
+                g.push({
+                  "@id": this.model.list_type_attributes[i]['@id'].replace(this.model.uri, '') ,
+                  "@type": "AttributeType" ,
+                  "hasAttributeObselType": type_names ,
+                  "hasAttributeDatatype": this.model.list_type_attributes[i]["hasAttributeDatatype"]
+                });
+              }
+              model.put_model(g)
+                   .then(function(resp){
+                     var rules = [];
+                     for(var i = 0; i < this.currentStylesheet.rules.length; i++){
+                       rules.push({
+                         'id': this.currentStylesheet.rules[i].id,
+                         'rules': this.currentStylesheet.rules[i].rules
+                       });
+                     }
+                     var params = ["model="+this.model.base_uri+id+"_model", "rules="+JSON.stringify(rules)];
+                     base.create_method(id, 'hrules', params, label)
+                         .then(function(resp){
+                         }.bind(this))
+                         .catch(function(err){
+                           console.log(err);
+                         })
+                   }.bind(this))
+                   .catch(function(err){
+                     console.log(err);
+                   });
+            }.bind(this))
+            .catch(function(err){
+              console.log(err);
+            });
+      },
+
+      /**
+       * Toggles `templateOptionsCollapse`.
+       *
+       * @method _onTemplateMenuClick
+       */
+      _onTemplateMenuClick: function() {
+        this.$.templateOptionsCollapse.toggle();
+      },
+
+      _onTemplateDownloadClick: function(){
+        var prop_uri = 'http://www.example.com/TODO#ModelStylesheets';
+        var l = [];
+        if( this.model.graph[0][prop_uri] ){
+          if(this.model.graph[0][prop_uri].constructor !== Array){
+            l = [this.model.graph[0][prop_uri]];
+          }
+          for(var i = 0; i < this.model.graph[0][prop_uri].length; i++){
+            try {
+              l.push(JSON.parse(this.model.graph[0][prop_uri][i]));
+            }catch(err){}
+          }
+        }
+        this.set('_stylesheetsList', l);
+        this.$.downloadStylesheetModal.open();
+      },
+
+      _onStylesheetSelect: function(evt){
+        this.set('currentStylesheet', evt.model.item);
+        this.set('_stylesheetsList', []);
+        this.$.downloadStylesheetModal.close();
+        this.fire('stylesheet-changed',{
+          'stylesheet': this.currentStylesheet
+        });
+        this.refresh();
+      },
+
+      /**
+       * Triggered on the `visibility` icon is clicked.
+       * Toggle the `rule` enabled attribute.
+       *
+       * @method _onVisibilityClicked
+       */
+      _onRuleVisibilityClicked: function(rule, elem) {
+        rule.visible = !rule.visible;
+        if(rule.visible) elem.set('icon', 'icons:visibility');
+        else elem.set('icon', 'icons:visibility-off');
+        this.fire('stylesheet-changed', {
+          'stylesheet': this.currentStylesheet
+        });
+      },
+
+      /**
+       * Triggered on the `visibility` icon is clicked.
+       * Toggle the `rule` enabled attribute.
+       *
+       * @method _onVisibilityClicked
+       */
+      _onRuleContentCopyClicked: function(rule) {
+        var newrule = JSON.parse(JSON.stringify(rule));
+        newrule.id = newrule.id + " copy";
+        this.fire('timeline-stylesheet-rule-setting', {
+          'rule': newrule
+        });
+      },
+
+      /**
+       * Triggered on the `visibility` icon is clicked.
+       * Toggle the `rule` enabled attribute.
+       *
+       * @method _onVisibilityClicked
+       */
+      _onRuleSettingsClicked: function(rule) {
+        this.fire('timeline-stylesheet-rule-setting', {
+          'rule': JSON.parse(JSON.stringify(rule))
+        });
+      },
+
+      /**
+       * Triggered on the `visibility` icon is clicked.
+       * Toggle the `rule` enabled attribute.
+       *
+       * @method _onVisibilityClicked
+       */
+      _onRuleDeleteClicked: function(rule) {
+        for(var i = 0; i < this.currentStylesheet.rules.length; i++){
+          if(this.currentStylesheet.rules[i].id === rule.id){
+            this.currentStylesheet.rules.splice(i,1);
+            i = this.currentStylesheet.rules.length;
+          }
+        }
+        this.fire('stylesheet-changed', {
+          'stylesheet': this.currentStylesheet
+        });
+        this.refresh();
+      },
+
+      /** ----------------------------------------------------------------------------
+      // MARK: Functions : DOM Elements creation
+      **/
+
+      _createAttributesTable: function(attributes) {
+        var table = document.createElement('table');
+        table.style.fontSize = '12px';
+        for (var i = 0; i < attributes.length; i++) {
+          // Create the cells
+          var td_name = document.createElement('td');
+          td_name.textContent = this._uriToName(attributes[i].uri);
+          var td_op = document.createElement('td');
+          td_op.textContent = attributes[i].operator;
+          var td_val = document.createElement('td');
+          td_val.textContent = attributes[i].value;
+          // Create the line
+          var tr = document.createElement('tr');
+          tr.appendChild(td_name);
+          tr.appendChild(td_op);
+          tr.appendChild(td_val);
+          table.appendChild(tr);
+        }
+        return table;
+      },
+
+      _createRuleIconDiv: function(symbol) {
+        var div = document.createElement('div');
+        var icon = document.createElement('iron-icon');
+        icon.set('icon', 'timeline-symbols:' + symbol.shape);
+        icon.style.color = symbol.color;
+        icon.style.width = icon.style.height = '40px';
+        div.appendChild(icon);
+        return div;
+      },
+
+      _createSubRuleDiv: function(subRule) {
+        // Create the main div
+        var div = document.createElement('div');
+        // Create the type div
+        var type_div = document.createElement('div');
+        type_div.style.textAlign = 'center';
+        type_div.style.width = '100%';
+        type_div.textContent =  this._uriToName(subRule.type);
+        // Create the attributes table
+        var att_table = this._createAttributesTable(subRule.attributes);
+        // Return the whole thing
+        div.appendChild(type_div);
+        div.appendChild(att_table);
+        return div;
+      },
+
+      _createRuleContentDiv: function(rule) {
+        // Create the main div
+        var main_div = document.createElement('div');
+        main_div.classList.add('flex-horizontal');
+        main_div.style.paddingBottom = main_div.style.paddingTop = '5px';
+        main_div.style.borderBottom = 'solid 1px gray';
+        // Create the icon div
+        var icon_div = this._createRuleIconDiv(rule.symbol);
+        // Create the sub rules div
+        var sub_rule_div = document.createElement('div');
+        sub_rule_div.classList.add('flexchild');
+        for (var i = 0; i < rule.rules.length; i++) {
+          var tmp_div = this._createSubRuleDiv(rule.rules[i]);
+          sub_rule_div.appendChild(tmp_div);
+        }
+        main_div.appendChild(icon_div);
+        main_div.appendChild(sub_rule_div);
+        return main_div;
+      },
+
+      _createRuleSettingsIcons: function(rule) {
+        // Create the iron-collapse
+        var ic = document.createElement('iron-collapse');
+        // Create the div
+        var div = document.createElement('div');
+        div.classList.add('content', 'flex-equal-around-justified', 'flex-horizontal');
+        // Create the visibility icon_div
+        var vi = document.createElement('iron-icon');
+        vi.classList.add('clickable','fgBlack','fgBlackH','hoverable', 'tiny-icon');
+        vi.title = this.localize('visibility-toggle');
+        if (rule.visible) vi.set('icon', 'visibility');
+        else vi.set('icon', 'visibility-off');
+        vi.addEventListener('click', function(evt) {
+          this._onRuleVisibilityClicked(rule, vi);
+        }.bind(this));
+        // Create the content-copy icon_div
+        var cci = document.createElement('iron-icon');
+        cci.classList.add('clickable','fgBlack','fgBlackH','hoverable', 'tiny-icon');
+        cci.title = this.localize('copy-rule');
+        cci.set('icon', 'content-copy');
+        cci.addEventListener('click', function(evt) {
+          this._onRuleContentCopyClicked(rule);
+        }.bind(this));
+        // Create the settings icon_div
+        var si = document.createElement('iron-icon');
+        si.classList.add('clickable','fgBlack','fgBlackH','hoverable', 'tiny-icon');
+        si.title = this.localize('edit-rule');
+        si.set('icon', 'settings');
+        si.addEventListener('click', function(evt) {
+          this._onRuleSettingsClicked(rule);
+        }.bind(this));
+        // Create the close icon_div
+        var ci = document.createElement('iron-icon');
+        ci.classList.add('clickable','fgBlack','fgBlackH','hoverable', 'tiny-icon');
+        ci.title = this.localize('delete-rule');
+        ci.set('icon', 'close');
+        ci.addEventListener('click', function(evt) {
+          this._onRuleDeleteClicked(rule);
+        }.bind(this));
+        // Return the whole thing
+        div.appendChild(vi);
+        div.appendChild(cci);
+        div.appendChild(si);
+        div.appendChild(ci);
+        ic.appendChild(div);
+        return ic;
+      },
+
+      _createRuleDiv: function(rule) {
+        var main_div = document.createElement('div');
+        // Create the title div
+        var title_div = document.createElement('div');
+        title_div.classList.add('flex-horizontal');
+        var rule_name_div = document.createElement('div');
+        rule_name_div.classList.add('flexchild');
+        var rule_name_span = document.createElement('span');
+        rule_name_span.style.fontSize = '16px';
+        rule_name_span.textContent = rule.id;
+        rule_name_div.appendChild(rule_name_span);
+        var rule_dist_span = document.createElement('span');
+        rule_dist_span.style.marginLeft = '10px';
+        rule_dist_span.style.fontSize = '12px';
+        rule_name_div.appendChild(rule_dist_span);
+        var option_icon_div = document.createElement('div');
+        option_icon_div.style.width = '60px';
+        var move_up_icon = document.createElement('iron-icon');
+        move_up_icon.set('icon', 'icons:arrow-drop-up');
+        move_up_icon.classList.add('clickable','fgBlack','fgBlackH','hoverable', 'tiny-icon');
+        move_up_icon.title = this.localize('move-up');
+        option_icon_div.appendChild(move_up_icon);
+        var move_down_icon = document.createElement('iron-icon');
+        move_down_icon.set('icon', 'icons:arrow-drop-down');
+        move_down_icon.classList.add('clickable','fgBlack','fgBlackH','hoverable', 'tiny-icon');
+        move_down_icon.title = this.localize('move-down');
+        option_icon_div.appendChild(move_down_icon);
+        var option_icon = document.createElement('iron-icon');
+        option_icon.set('icon', 'expand-more');
+        option_icon.classList.add('clickable','fgBlack','fgBlackH','hoverable', 'tiny-icon');
+        option_icon.title = this.localize('expand');
+        option_icon_div.appendChild(option_icon);
+        title_div.appendChild(rule_name_div);
+        title_div.appendChild(option_icon_div);
+        // Create the rule settings panel
+        var ruleSettingsIcons = this._createRuleSettingsIcons(rule);
+        option_icon.addEventListener('click', function(evt) {
+          ruleSettingsIcons.toggle();
+        }.bind(this));
+        move_up_icon.addEventListener('click', function(evt) {
+          var child = main_div;
+          var parent = child.parentNode;
+          // The equivalent of parent.children.indexOf(child)
+          var index = Array.prototype.indexOf.call(parent.children, child);
+          if(index > 0){
+            parent.insertBefore(child, parent.childNodes[index - 1]);
+            var tmp = this.currentStylesheet.rules[index];
+            this.currentStylesheet.rules[index] = this.currentStylesheet.rules[index - 1];
+            this.currentStylesheet.rules[index - 1] = tmp;
+          }
+          this.fire('stylesheet-changed', {
+            'stylesheet': this.currentStylesheet
+          });
+        }.bind(this));
+        move_down_icon.addEventListener('click', function(evt) {
+          var child = main_div;
+          var parent = child.parentNode;
+          // The equivalent of parent.children.indexOf(child)
+          var index = Array.prototype.indexOf.call(parent.children, child);
+          if(index < this.currentStylesheet.rules.length){
+            parent.insertBefore(parent.childNodes[index + 1], child);
+            var tmp = this.currentStylesheet.rules[index];
+            this.currentStylesheet.rules[index] = this.currentStylesheet.rules[index + 1];
+            this.currentStylesheet.rules[index + 1] = tmp;
+          }
+          this.fire('stylesheet-changed', {
+            'stylesheet': this.currentStylesheet
+          });
+        }.bind(this));
+        // Create the rule content div
+        var ruleContentDiv = this._createRuleContentDiv(rule);
+        // Return the whole thing
+        main_div.appendChild(title_div);
+        main_div.appendChild(ruleSettingsIcons);
+        main_div.appendChild(ruleContentDiv);
+        return main_div;
+      },
+
+      refresh: function() {
+        // Empty the rules list
+        this.$['rules-container'].innerHTML = "";
+        for(var i = 0; i < this.currentStylesheet.rules.length; i++){
+          this.$['rules-container'].appendChild( this._createRuleDiv(this.currentStylesheet.rules[i]));
+        }
+      },
+
+      /** ----------------------------------------------------------------------------
+      // MARK: OLD STUFF
+      **/
+
+      addRule: function(rule) {
+        var exists = false;
+        for(var i = 0 ; i < this.currentStylesheet.rules.length; i++){
+          if(this.currentStylesheet.rules[i].id === rule.id){
+            this.currentStylesheet.rules[i] = rule;
+            exists = true;
+          }
+        }
+        if(!exists) this.push('currentStylesheet.rules', rule);
+        this.refresh();
+        this.fire('stylesheet-changed', {
+          'stylesheet': this.currentStylesheet
+        });
+      },
+
+      _uriToName: function(uri) {
+        return (uri) ? uri.replace(this.model.uri + '#', '') : uri;
+      },
+
+      _nameToUri: function(name) {
+        return this.model.uri + '#' + name;
+      },
+
+      _setSymbolForType: function(uri, pointer) {
+        if (pointer >= this._predefined_colors_.length) {
+          pointer = 0;
+        }
+        return {
+          'd': [uri, {
+            'color': this._predefined_colors_[pointer],
+            'shape': 'CIRCLE'
+          }],
+          'p': pointer + 1
+        };
+      },
+
+      createRandomStyle: function() {
+        var rules = [];
+        var pointer = 0;
+
+        for (var i = 0; i < this.model.list_type_obsels.length; i++) {
+          var ssft = this._setSymbolForType(this.model.list_type_obsels[i]['@id'], pointer);
+          pointer = ssft.p;
+          var rule = {
+            id: 'default_rule_' + i,
+            rules: [{
+              type: this._uriToName(this.model.list_type_obsels[i]['@id']),
+              attributes: []
+            }],
+            visible: true,
+            symbol: ssft.d[1]
+          };
+          var d = this._createRuleDiv(rule);
+          this.$['rules-container'].appendChild(d);
+        }
+
+      },
+
+      loadStylesheetsFromModel: function() {
+        if (this.model.model_properties['http://taaabs-hubble/onto#timeline-stylesheet']) {
+          this.set('_stylesheets', JSON.parse(this.model.model_properties['http://taaabs-hubble/onto#timeline-stylesheet']));
+        }
+      },
+
+      forceRefresh: function() {
+        this.$.stylesListRepeat.set('items', []);
+        this.async(function() {
+          this.$.stylesListRepeat.set('items', this.styleTemplate.rules);
+        }, 50);
+      },
+
+      /**
+       * Returns the `iron-icon` value according to the enabled status of the rule.
+       *
+       * @param {!required} enabled {String} Enabled status of the rule.
+       *
+       * @method _getVisibility
+       */
+      _getVisibility: function(enabled) {
+        return (enabled) ? 'icons:visibility' : 'icons:visibility-off';
+      },
+
+      /**
+       *
+       *
+       * @param {!required} e {String} Event from click.
+       *
+       * @method _onSettingsClicked
+       */
+      _onSettingsClicked: function(e) {
+        this.fire('edit_rule', {
+          rule: this.styleTemplate.rules[e.model.index]
+        });
+      },
+
+      /**
+       *
+       *
+       * @param {!required} e {String} Event from click.
+       *
+       * @method _onDeleteClicked
+       */
+      _onDeleteClicked: function(e) {
+        this.splice('styleTemplate.rules', e.model.index, 1);
+        this.fire('template_changed');
+      },
+
+      _onDownloadClick: function() {
+        this.$.styleList.toggle();
+      },
+
+      _onStyleListClick: function(evt) {
+        this.set('styleTemplate', evt.model.item);
+        this.fire('template_changed');
+      },
+
+      _onUploadClick: function() {
+        this.$.uploadStyleModal.toggle();
+      }
+
+
+
+    });
+  </script>
+</dom-module>

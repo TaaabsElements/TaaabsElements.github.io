@@ -1,0 +1,38 @@
+{
+  "name": "taaabs-obsel-simpleview",
+  "description": "A graphical component that displays some informations of an obsel.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-obsel-simpleview.git"
+  },
+  "main": "taaabs-obsel-simpleview.html",
+  "license": "https://github.com/TaaabsElements/taaabs-obsel-simpleview/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "taaabs-themes": "TaaabsElements/taaabs-themes"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-obsel-simpleview",
+  "_release": "feb0ac1e70",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "feb0ac1e701a7c800e0b6111dd685ea4f6a900f9"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-obsel-simpleview.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-obsel-simpleview"
+}

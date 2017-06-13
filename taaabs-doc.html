@@ -1,0 +1,817 @@
+<link rel="import" href="bower_components/app-layout/app-layout.html">
+<link rel="import" href="bower_components/app-route/app-route.html">
+<link rel="import" href="bower_components/app-route/app-location.html">
+<link rel="import" href="bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="bower_components/iron-component-page/iron-component-page.html">
+
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
+<dom-module id="taaabs-doc">
+  <template>
+    <style is="custom-style">
+
+      :host {
+        font-family: 'Roboto', sans-serif;
+      }
+
+      :host div{
+        box-sizing: border-box;
+      }
+
+      :host app-header-layout{
+        width: 1000px;
+        margin: 0 auto;
+      }
+
+      :host app-header {
+        background-color: var(--paper-purple-500);
+        color: white;
+      }
+
+
+      :host #home{
+        height: calc(100vh - 40px);
+        width: 100%;
+      }
+
+      :host p{
+        text-align: justify;
+      }
+
+      :host .link{
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+        padding: 10px;
+        color: white !important;
+        text-decoration: none !important;
+      }
+
+      :host h3{
+        margin-top: 1.5em;
+      }
+
+      :host a{
+        cursor: pointer;
+        border-bottom: dotted 1px grey;
+        color: rgba(0,0,0,0.87);
+        text-decoration: none !important;
+        transition: color ease-in-out 0.25s, border-color ease-in-out 0.25s;
+      }
+
+      :host a:hover{
+        border-color: var(--paper-purple-500);
+        color: var(--paper-purple-500);
+      }
+
+      :host .swag-scroll{
+        overflow: auto;
+      }
+
+      :host .swag-scroll::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      :host .swag-scroll::-webkit-scrollbar-track {
+        background: #ddd;
+      }
+
+      :host .swag-scroll::-webkit-scrollbar-thumb {
+        background: #666;
+      }
+
+      /** ================================================================== **/
+      /**  COMPONENTS LIST                                                   **/
+
+      :host #components-list{
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+        width: 100%;
+      }
+
+      :host #components-list div{
+        width: 33.33%;
+        padding: 10px;
+      }
+
+      :host #components-list div > div{
+        width: 100%;
+        text-align: center;
+        border: solid 1px grey;
+      }
+
+      :host #components-list div > div:hover{
+        box-shadow: 5px 5px 1em grey;
+      }
+
+      :host #components-list a{
+        cursor: pointer;
+        border-bottom: dotted 1px grey;
+        color: rgba(0,0,0,0.87);
+        text-decoration: none !important;
+        transition: color ease-in-out 0.25s, border-color ease-in-out 0.25s;
+      }
+
+      :host #components-list a:hover{
+        border-color: var(--paper-purple-500);
+        color: var(--paper-purple-500);
+      }
+
+      /** ================================================================== **/
+      /**  COMPONENTS SUB-LIST                                               **/
+
+      :host #components-subgroup-list{
+        width: 100%;
+      }
+
+      :host #components-subgroup-list div{
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px;
+      }
+
+      :host #components-subgroup-list div:nth-child(2n){
+        background-color: var(--paper-grey-100);
+      }
+
+      :host #components-subgroup-list a{
+        cursor: pointer;
+        border-bottom: dotted 1px grey;
+        color: rgba(0,0,0,0.87);
+        text-decoration: none !important;
+        transition: color ease-in-out 0.25s, border-color ease-in-out 0.25s;
+      }
+
+      :host #components-subgroup-list a:hover{
+        border-color: var(--paper-purple-500);
+        color: var(--paper-purple-500);
+      }
+
+      :host .screenshots-thumbnails{
+        @apply --layout-horizontal;
+        @apply --layout-around-justified;
+        width: 100%;
+      }
+
+      /** ================================================================== **/
+      /**  DOC TARGET                                                        **/
+
+      #doc-target iron-component-page{
+        max-height: calc(100vh - 128px);
+      }
+
+      #component-page {
+        height: calc(100vh - 128px);
+        position: relative;
+      }
+
+      /** ================================================================== **/
+      /**  SEARCH DRAWER                                                     **/
+
+      #search-icon{
+        cursor: pointer;
+      }
+
+      #search-icon:hover{
+        --iron-icon-stroke-color: rgba(255,255,255,0.87);
+      }
+
+      #search-drawer{
+        position: absolute;
+        background-color: rgba(0,0,0,0.67);
+        z-index: 2;
+        height: calc(100vh - 128px);
+        width: 1000px;
+        top: 128px;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      #search-drawer > div {
+        padding: 24px;
+        background-color: var(--paper-grey-50);
+        height: 100%;
+        display: block;
+      }
+
+      #search-input{
+        font-size: 24px;
+        width: 100%;
+      }
+
+      #search-list-results{
+        max-height: calc( 100% - 62px);
+        @apply --layout-vertical;
+        overflow-y: scroll;
+      }
+
+      #search-list-results div{
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+    </style>
+
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{page}}"
+        tail="{{tail}}">
+    </app-route>
+    <app-route
+        route="{{route}}"
+        pattern="/components/:name"
+        data="{{componentPage}}">
+    </app-route>
+    <app-route
+        route="{{route}}"
+        pattern="/components/detail/:name"
+        data="{{componentName}}">
+    </app-route>
+
+    <app-header-layout>
+      <app-header slot="header" fixed>
+        <app-toolbar sticky>
+          <div main-title>Taaabs Elements</div>
+          <iron-icon id="search-icon" icon="icons:search" on-click="_openSearchDrawer"></iron-icon>
+        </app-toolbar>
+        <app-toolbar sticky>
+          <paper-tabs selected="[[page.page]]" attr-for-selected="name" no-slide noink>
+            <paper-tab name="overview" link>
+              <a href="#/overview" class="link">Overview</a>
+            </paper-tab>
+            <paper-tab name="components" link>
+              <a href="#/components/list" class="link">Components</a>
+            </paper-tab>
+            <paper-tab name="ktbs4la" link>
+              <a href="#/ktbs4la" class="link">Ktbs For LA</a>
+            </paper-tab>
+          </paper-tabs>
+        </app-toolbar>
+      </app-header>
+
+      <iron-collapse id="search-drawer">
+        <div>
+          <paper-input id="search-input" label="Search" value="{{search}}">
+            <iron-icon icon="icons:search" slot="suffix"></iron-icon>
+          </paper-input>
+          <div id="search-list-results" class="swag-scroll">
+            <template is="dom-repeat" items="[[_getSearchList(search)]]">
+              <div>
+                <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                <span style="font-style:italic; color: grey"> [[item.label]] </span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </iron-collapse>
+
+      <div>
+        <iron-pages selected="[[page.page]]" attr-for-selected="name">
+          <section name="overview">
+            <h3>What's that ?</h3>
+            <p>
+              TaaabsElements is a components library that helps working with a kernel for Trace-Based Systems.
+            </p>
+
+            <h3>What's a component ?</h3>
+            <p>
+              A web component is a custom element that works like a standard DOM element. TaaabsElements relies on <a href="https://www.polymer-project.org/">Polymer</a> v1.x to create such elements.
+            </p>
+
+            <h3>What's a kernel for Trace-Based Systems ?</h3>
+            <p>
+              A kTBS is a specific DBMS dedicated to traces. For more informations, take a look at
+              <a href="https://kernel-for-trace-based-systems.readthedocs.io/en/latest/index.html">our kTBS documentation</a>.
+            </p>
+
+            <h3>Who are we ?</h3>
+            <p>
+              We are the liris Tweak team.
+              Here's <a href="https://liris.cnrs.fr/equipes?id=75&llanguage=en&set_language=en">our website</a>.
+              Please take a look at <a href="http://tbs-platform.org/tbs/doku.php">our work on trace-based systems</a>.
+            </p>
+
+
+          </section>
+          <section name="components">
+            <iron-pages selected="[[componentPage.name]]" attr-for-selected="name">
+              <section name="list">
+                <h3> The Taaabs Components </h3>
+                <p>
+
+                </p>
+                <div id="components-list">
+                  <template is="dom-repeat" items="[[componentsList]]" index-as="index">
+                    <div>
+                      <div>
+                        <a href="#/components/[[item.package]]">[[item.package]]</a> <br/><br/>
+                        [[_getElementsCounts(item)]] components
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </section>
+
+              <section name="taaabs-trace">
+                <h3> The Taaabs Trace </h3>
+                <p>
+
+                </p>
+                <div id="components-subgroup-list">
+                  <template is="dom-repeat" items="[[_getComponentList(componentPage.name)]]" index-as="index">
+                    <div>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]/issues' target="_blank">
+                        <iron-icon icon="icons:bug-report"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:github"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none" href='#/components/detail/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:description"></iron-icon>
+                      </a>
+                      <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                      <span style="font-style:italic; color: grey"> [[item.label]] </span>
+                    </div>
+                  </template>
+                </div>
+              </section>
+
+              <section name="taaabs-csv">
+                <h3> The Taaabs Csv </h3>
+                <p>
+
+                </p>
+                <div id="components-subgroup-list">
+                  <template is="dom-repeat" items="[[_getComponentList(componentPage.name)]]" index-as="index">
+                    <div>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]/issues' target="_blank">
+                        <iron-icon icon="icons:bug-report"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:github"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none" href='#/components/detail/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:description"></iron-icon>
+                      </a>
+                      <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                      <span style="font-style:italic; color: grey"> [[item.label]] </span>
+                    </div>
+                  </template>
+                </div>
+              </section>
+
+              <section name="taaabs-method">
+                <h3> The Taaabs Method </h3>
+                <p>
+
+                </p>
+                <div id="components-subgroup-list">
+                  <template is="dom-repeat" items="[[_getComponentList(componentPage.name)]]" index-as="index">
+                    <div>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]/issues' target="_blank">
+                        <iron-icon icon="icons:bug-report"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:github"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none" href='#/components/detail/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:description"></iron-icon>
+                      </a>
+                      <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                      <span style="font-style:italic; color: grey"> [[item.label]] </span>
+                    </div>
+                  </template>
+                </div>
+              </section>
+
+              <section name="taaabs-model">
+                <h3> The Taaabs Model </h3>
+                <p>
+
+                </p>
+                <div id="components-subgroup-list">
+                  <template is="dom-repeat" items="[[_getComponentList(componentPage.name)]]" index-as="index">
+                    <div>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]/issues' target="_blank">
+                        <iron-icon icon="icons:bug-report"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:github"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none" href='#/components/detail/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:description"></iron-icon>
+                      </a>
+                      <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                      <span style="font-style:italic; color: grey"> [[item.label]] </span>
+                    </div>
+                  </template>
+                </div>
+              </section>
+
+              <section name="taaabs-obsel">
+                <h3> The Taaabs Obsel </h3>
+                <p>
+
+                </p>
+                <div id="components-subgroup-list">
+                  <template is="dom-repeat" items="[[_getComponentList(componentPage.name)]]" index-as="index">
+                    <div>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]/issues' target="_blank">
+                        <iron-icon icon="icons:bug-report"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:github"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none" href='#/components/detail/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:description"></iron-icon>
+                      </a>
+                      <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                      <span style="font-style:italic; color: grey"> [[item.label]] </span>
+                    </div>
+                  </template>
+                </div>
+              </section>
+
+              <section name="misc">
+                <h3> Miscellanous </h3>
+                <p>
+
+                </p>
+                <div id="components-subgroup-list">
+                  <template is="dom-repeat" items="[[_getComponentList(componentPage.name)]]" index-as="index">
+                    <div>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]/issues' target="_blank">
+                        <iron-icon icon="icons:bug-report"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:github"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none" href='#/components/detail/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:description"></iron-icon>
+                      </a>
+                      <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                      <span style="font-style:italic; color: grey"> [[item.label]] </span>
+                    </div>
+                  </template>
+                </div>
+              </section>
+
+              <section name="taaabs-base">
+                <h3> The Taaabs Base </h3>
+                <p>
+                  The Taaabs Base components aim to help exploring a Ktbs root or Base.
+                </p>
+                <div class="screenshots-thumbnails">
+                  <!--- TODO Create images -->
+                </div>
+                <div id="components-subgroup-list">
+                  <template is="dom-repeat" items="[[_getComponentList(componentPage.name)]]" index-as="index">
+                    <div>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]/issues' target="_blank">
+                        <iron-icon icon="icons:bug-report"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none;" href='https://github.com/TaaabsElements/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:github"></iron-icon>
+                      </a>
+                      <a style="float:right; border:none" href='#/components/detail/[[item.name]]' target="_blank">
+                        <iron-icon icon="icons:description"></iron-icon>
+                      </a>
+                      <a href="#/components/detail/[[item.name]]">[[item.name]]</a><br/>
+                      <span style="font-style:italic; color: grey"> [[item.label]] </span>
+                    </div>
+                  </template>
+                </div>
+              </section>
+              <section name="detail">
+                <div id="doc-target">
+                  <iron-component-page id="component-page"></iron-component-page>
+                </div>
+              </section>
+            </iron-pages>
+          </section>
+          <section name="ktbs4la">
+            <h3> kTBS for Learning Analytics </h3>
+            <p>
+              <a href="#/components/detail/ktbs-for-la">kTBS for LA</a> is a web app using some Taaabs components. It helps learning analysts work with a ktbs.
+            </p>
+            <p>
+              Full description incomming.
+            </p>
+          </section>
+        </iron-pages>
+      </div>
+    </app-header-layout>
+  </template>
+  <script>
+    Polymer({
+      is: 'taaabs-doc',
+
+      properties: {
+
+        /**
+         * Main route.
+         *
+         * @attribute route
+         * @type Object
+         */
+        route: {
+         type: Object,
+         notify: true,
+         observer: "_onRouteChange"
+        },
+
+        /**
+         * Current page.
+         *
+         * @attribute page
+         * @type String
+         */
+        page: {
+         type: String,
+         notify: true,
+         value: null
+        },
+
+        /**
+         * Route tail.
+         *
+         * @attribute tail
+         * @type Object
+         */
+        tail: {
+         type: Object,
+         notify: true,
+         value: null
+        },
+
+        /**
+         * Component name.
+         *
+         * @attribute componentName
+         * @type String
+         */
+        componentName: {
+         type: String,
+         notify: true
+        },
+
+        /**
+         * Component page.
+         *
+         * @attribute componentPage
+         * @type String
+         */
+        componentPage: {
+         type: String,
+         notify: true
+        },
+
+        /**
+         * Page index.
+         *
+         * @attribute pageIndex
+         * @type Number
+         */
+        pageIndex: {
+         type: Number,
+         notify: true,
+         value: 0
+        },
+
+        /**
+         * Components List
+         *
+         * @attribute componentsList
+         * @type Array
+         */
+        componentsList: {
+         type: Array,
+         notify: true,
+         value: function(){
+           return [
+             {
+               'package': 'taaabs-trace',
+               'components': [
+                 {
+                  'name': 'taaabs-trace-details',
+                  'label': 'A graphical element that displays the main stats of a ktbs trace.'
+                 },
+                 {
+                   'name': 'taaabs-trace-details-container',
+                   'label': 'A graphical element that displays the main stats of a ktbs trace, and some to tools to work with the trace.'
+                 },
+                 {
+                   'name': 'taaabs-trace-histogram',
+                   'label': 'A graphical element that displays an histogram showing the obsel count over time intervals.'
+                 },
+                 {
+                   'name': 'taaabs-trace-loader',
+                   'label': 'Helps managing the download  of a trace and its obsels.'
+                 },
+                 {
+                   'name': 'taaabs-trace-split',
+                   'label': 'List of several elements that split a trace.'
+                 },
+                 {
+                   'name': 'taaabs-trace-timeline',
+                   'label': 'A graphical component that displays a trace as a timeline.'
+                 },
+                 {
+                   'name': 'taaabs-trace-timeline-container',
+                   'label': 'A graphical elements that displays a timeline and its ruler for a kTBS trace.'
+                 },
+                 {
+                   'name': 'taaabs-trace-timeline-docker',
+                   'label': 'A graphical element bundling several trace timeline tools.'
+                 },
+                 {
+                   'name': 'taaabs-trace-timeline-scroller',
+                   'label': 'A graphical timeline. It\'s supposed to work in pair with one or several taaabs-trace-timeline.'
+                 },
+                 {
+                   'name': 'taaabs-trace-timeline-stylesheet',
+                   'label': 'A set of component for editing a stylesheet. Works in pair with a taaab-strace-timeline.'
+                 }
+               ]
+             },
+             {
+               'package': 'taaabs-csv',
+               'components': [
+                 {
+                  'name': 'taaabs-csv-collector',
+                  'label': 'A graphical element in which the user can edit a trace model from some csv files, and then upload the traces.'
+                 },
+                 {
+                   'name': 'taaabs-csv-schema',
+                   'label': 'A graphical element in which the user can edit the properties of a trace csv file.'
+                 },
+                 {
+                   'name': 'taaabs-csv-to-ktbs',
+                   'label': 'A graphical element in which the user can upload a trace csv file according to a trace model previously edited.'
+                 },
+                 {
+                   'name': 'taaabs-csv-to-ktbsmodel',
+                   'label': 'A graphical element in which the user can edit the corresponding trace model of a trace csv file.'
+                 }
+               ]
+             },
+             {
+               'package': 'taaabs-base',
+               'components': [
+                 {
+                   'name': 'taaabs-base-create',
+                   'label': 'A graphical element for creating a new base onto a kTBS.'
+                 },
+                 {
+                  'name': 'taaabs-base-details',
+                  'label': 'A graphical element that load and display the informations of a base.'
+                 },
+                 {
+                   'name': 'taaabs-base-graph',
+                   'label': 'A graphical element that displays the graph of a ktbs base.'
+                 },
+                 {
+                   'name': 'taaabs-base-overview',
+                   'label': 'A graphical element that displays the list of subbase of a base or a ktbs root.'
+                 }
+               ]
+             },
+             {
+               'package': 'taaabs-method',
+               'components': [
+                 {
+                   'name': 'taaabs-method-details',
+                   'label': 'A graphical element that helps applying methods on some traces.'
+                 },
+                 {
+                  'name': 'taaabs-compute-trace-split',
+                  'label': 'A graphical element that helps the user splitting a trace according to an attribute of the obsels.'
+                 }
+               ]
+             },
+             {
+               'package': 'taaabs-model',
+               'components': [
+                 {
+                   'name': 'taaabs-model-simpleview',
+                   'label': 'A graphical component that displays some informations of a model.'
+                 }
+               ]
+             },
+             {
+               'package': 'taaabs-obsel',
+               'components': [
+                 {
+                   'name': 'taaabs-obsel-simpleview',
+                   'label': 'A graphical component that displays some informations of an obsel.'
+                 }
+               ]
+             },
+             {
+               'package': 'misc',
+               'components': [
+                 {
+                   'name': 'file-reader',
+                   'label': 'A graphical element that simplify file reading.'
+                 },
+                 {
+                   'name': 'taaabs-research',
+                   'label': 'A graphical component that helps looking for resources in a ktbs.'
+                 },
+                 {
+                   'name': 'taaabs-resource-loader',
+                   'label': 'Helps manage resources loading.'
+                 },
+                 {
+                   'name': 'taaabs-taaabs',
+                   'label': 'Main dependencies provider for all taaabs elements.'
+                 },
+                 {
+                   'name': 'taaabs-themes',
+                   'label': 'CSS themes.'
+                 },
+                 {
+                   'name': 'taaabs-time-utilities',
+                   'label': 'An element that helps working with dates.'
+                 },
+                 {
+                   'name': 'ktbs-for-la',
+                   'label': 'A web app using some `taaabs` components. It helps learning analysts work with a ktbs.'
+                 }
+               ]
+             }
+           ]
+         }
+        },
+
+        /**
+         * Search value.
+         *
+         * @attribute search
+         * @type String
+         */
+        search: {
+         type: String,
+         notify: true,
+         value: ""
+        },
+
+      },
+
+      _getElementsCounts: function(item){
+        return item.components.length;
+      },
+
+      _getComponentList: function(name){
+        for(var i in this.componentsList)
+          if(this.componentsList[i].package === name) return this.componentsList[i].components
+        return [];
+      },
+
+      _getComponentBase: function(cn){
+        if(cn === null || cn.name === undefined) return null;
+        return 'bower_components/'+cn.name+'/'+cn.name+'.html';
+      },
+
+      /** ================================================================== **/
+      /**  ROUTES                                                            **/
+
+
+      _generateIronComponentPage: function(){
+        this.$['component-page'].set('src', 'bower_components/'+this.componentName.name+'/'+this.componentName.name+'.html');
+      },
+
+      /**
+       * .
+       *
+       * @method _onRouteChange
+       */
+      _onRouteChange: function(route){
+        this.$['search-drawer'].hide();
+        if(this.page === null) this.set('route.path', '/overview');
+        else if(this.page.page === 'components' && this.componentPage.name === 'detail') setTimeout(this._generateIronComponentPage.bind(this), 250);
+      },
+
+      _openSearchDrawer: function(){
+        this.$['search-drawer'].toggle();
+      },
+
+      _getSearchList: function(search){
+        var result = [];
+        for(var i in this.componentsList)
+          for(var j in this.componentsList[i].components)
+            if(this.componentsList[i].components[j].name.indexOf(search) !== -1) result.push(this.componentsList[i].components[j]);
+        return result;
+      }
+
+
+    });
+  </script>
+</dom-module>

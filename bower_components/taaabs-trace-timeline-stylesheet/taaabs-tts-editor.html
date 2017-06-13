@@ -1,0 +1,674 @@
+<link rel="import" href="./taaabs-trace-timeline-icons.html">
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-swatch-picker/paper-swatch-picker.html">
+<link rel="import" href="../notify-toast-behavior/notify-toast-behavior.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+
+<dom-module id="taaabs-tts-editor">
+  <template>
+    <style include="taaabs-theme"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      :host .sub-rule-div{
+        padding: 3px;
+        border: solid 1px gray;
+      }
+
+      :host .sub-rule-div:nth-child(2n+1){
+        background-color: rgba(144, 144, 144, 0.25);
+      }
+
+      :host .attribute-container{
+        padding: 3px;
+        border: solid 1px gray;
+        margin-bottom: 2px;
+      }
+
+    </style>
+
+    <div style="max-width: 600px; padding: 5px">
+      <div class="flex-horizontal flex-equal-justified">
+        <div class="flex-vertical flexchild">
+          <div>
+            <paper-input id="rule-id-input" label="Rule ID" on-change="_onRuleIdInputChange"></paper-input>
+          </div>
+        </div>
+        <div class="flex-horizontal">
+          <div class="flexchild" style="padding: 20px">
+            <iron-icon id="symbolIconPreview" style="width: 80px; height: 80px;" icon="timeline-symbols:DIAMOND"></iron-icon>
+          </div>
+          <div class="flex-vertical" style="width: 120px">
+            <div class="flex-reversed">
+              <paper-dropdown-menu label="shape" noAnimations>
+                <paper-listbox id="rule-shape" class="dropdown-content" on-iron-select="_onShapeSelectChange" selected='0'>
+                  <paper-item value="DIAMOND">
+                    <iron-icon class="symbolIcon" icon="timeline-symbols:DIAMOND"></iron-icon>
+                    <span style="margin-left: 10px">DIAMOND</span>
+                  </paper-item>
+                  <paper-item value="STAR">
+                    <iron-icon class="symbolIcon" icon="timeline-symbols:STAR"></iron-icon>
+                    <span style="margin-left: 10px">STAR</span>
+                  </paper-item>
+                  <paper-item value="CIRCLE">
+                    <iron-icon class="symbolIcon" icon="timeline-symbols:CIRCLE"></iron-icon>
+                    <span style="margin-left: 10px">CIRCLE</span>
+                  </paper-item>
+                  <paper-item value="SQUARE">
+                    <iron-icon class="symbolIcon" icon="timeline-symbols:SQUARE"></iron-icon>
+                    <span style="margin-left: 10px">SQUARE</span>
+                  </paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+            <div>
+              <paper-swatch-picker id="rule-color" title="[[localize('pick-color')]]" on-color-picker-selected="_onColorPickerSelected"></paper-swatch-picker>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex-vertical" id="rules-container">
+      </div>
+      <div class="flex-horizontal flex-equal-around-justified" style="border: solid 1px gray; width: 100%">
+        <iron-icon class="clickable" icon="icons:add" title="[[localize('add-rule')]]" on-click="_onAddRuleClick"></iron-icon>
+      </div>
+      <div class="flex-reversed">
+        <paper-button on-click="_onApplyStylesheetRule" raised>[[localize('apply')]]</paper-button>
+        <paper-button on-click="clearRule" raised>[[localize('clear')]]</paper-button>
+      </div>
+    </div>
+  </div>
+
+  <paper-toast class="fit-bottom" id="__notify_toast__" duration=0> </paper-toast>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'taaabs-tts-editor',
+
+      properties: {
+
+        modelUri: {
+          type: String,
+          notify: true,
+          value: ""
+        },
+
+        _currentStylesheetRule: {
+          type: Object,
+          notify: true,
+          value: function() {
+            return this.createNewStylesheetRule();
+          }
+        },
+
+        _colorFromPicker: {
+          type: Object,
+          notify: true,
+          value: {
+            red: 33,
+            green: 178,
+            blue: 166
+          }
+        },
+
+        /**
+         * List of sub rules of the current stylesheet rule.
+         *
+         * @attribute _subRules
+         * @type Array
+         */
+        _subRules: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+
+        resources: {
+          type: Object,
+          notify: true,
+          value: function(){
+            return {
+              "en": {
+                "apply":            "Apply",
+                "clear":            "Clear",
+                "add-rule":         "Add a rule",
+                "pick-color":       "Pick a color",
+                "delete-rule":      "Remove a rule",
+                "add-attribute":    "Add an attribute",
+                "remove-attribute": "Remove an attribute"
+              },
+              "fr": {
+                "apply":            "Appliquer",
+                "clear":            "Réinitialiser",
+                "add-rule":         "Ajouter une règle",
+                "pick-color":       "Choisir une couleur",
+                "delete-rule":      "Retirer une règle",
+                "add-attribute":    "Ajouter un attribut",
+                "remove-attribute": "Retirer un attribut"
+              }
+            }
+          }
+        },
+
+        /**
+         * Localization.
+         * fr, en.
+         *
+         * @attribute language
+         * @type String
+         */
+        language: {
+          type: String,
+          notify: true,
+          value: 'en'
+        }
+
+      },
+
+      behaviors: [
+        NotifyToastBehavior,
+        Polymer.AppLocalizeBehavior
+      ],
+
+      observers: [],
+
+      attached: function() {},
+
+      setRule: function(rule){
+        this.set('_currentStylesheetRule', this.createNewStylesheetRule(rule));
+        this.$['rule-id-input'].set('value', this._currentStylesheetRule.id);
+        var sl = ['DIAMOND', 'STAR', 'CIRCLE', 'SQUARE'];
+        this.$['rule-color'].set('color', rule.symbol.color);
+        this.$['rule-shape'].set('selected', sl.indexOf(rule.symbol.shape));
+        this.$.symbolIconPreview.style.color = this.$['rule-color'].color;
+        for(var i = 0; i < this._currentStylesheetRule.rules.length; i++){
+          this.$['rules-container'].appendChild(this._generateRuleContainer(i, this._currentStylesheetRule.rules[i]));
+        }
+      },
+
+      clearRule: function(){
+        this.$['rules-container'].innerHTML = '';
+        this.set('_currentStylesheetRule', this.createNewStylesheetRule());
+        this.$['rule-id-input'].set('value', "");
+        this.$['rule-shape'].set('selected', 0);
+        this.$['rule-color'].set('color', '#000000');
+        this.$.symbolIconPreview.style.color = this.$['rule-color'].color;
+      },
+
+      /** ----------------------------------------------------------------------
+      // MARK: Function : DOM events
+      **/
+
+      /**
+       * On change event on `rule id` input, changes the rule Id in the current stylesheet rule.
+       *
+       * @param {!required] evt {Event} the event fired by change.
+       *
+       * @method _onRuleIdInputChange
+       */
+      _onRuleIdInputChange: function(evt) {
+        var value = evt.target.value;
+        this._currentStylesheetRule.set_id(value);
+        if (!this._currentStylesheetRule.is_unique(this._template)) alert('aie');
+      },
+
+      /**
+       * On change event on `shape` select, changes the shape in the current stylesheet rule.
+       *
+       * @param {!required} evt {Event} The event fired by change.
+       *
+       * @method _onShapeSelectChange
+       */
+      _onShapeSelectChange: function(evt) {
+        var shape = evt.target.selectedItem.getAttribute('value');
+        var color = this.$['rule-color'].color;
+        this._currentStylesheetRule.set_symbol(color, shape);
+        // Modify the displayed icon
+        var iconName = 'timeline-symbols:' + shape;
+        this.$.symbolIconPreview.set('icon', iconName);
+      },
+
+      /**
+       * On click event on 'add rule' button.
+       *
+       * @method _onAddRuleClick
+       */
+      _onAddRuleClick: function() {
+        var index = this._currentStylesheetRule.add_rule({
+          'type': '',
+          'attributes': []
+        });
+        var rule_container = this._generateRuleContainer(index, this._currentStylesheetRule.get_rule(index));
+        this.$['rules-container'].appendChild(rule_container);
+      },
+
+      /**
+       * On change on `type name`. Changes the uri of the type obsel of the rule.
+       *
+       * @param {!required} evt {String} The change event.
+       * @param {!required} ruleIndex {String} The rule position in the StylesheetRule.
+       *
+       * @method _onTypeNameChange
+       */
+      _onTypeNameChange: function(evt, ruleIndex) {
+        this._currentStylesheetRule.set_type(ruleIndex, this._nameToUri(evt.target.value));
+      },
+
+      /**
+       * On change event on `attribute name` input. Changes the attribute uri.
+       *
+       * @param {!required} evt {Event} The event fired.
+       * @param {!required} ruleIndex {Number} The position of the rule in the StylesheetRule.
+       * @param {!required} attributeIndex {Number} The position of the attribute sub-rule in the rule.
+       *
+       * @method _onAttributeNameChange
+       */
+      _onAttributeNameChange: function(evt, ruleIndex, attributeIndex) {
+        var att = this._currentStylesheetRule.get_attribute(ruleIndex, attributeIndex);
+        att.uri = this._nameToUri(evt.target.value);
+        this._currentStylesheetRule.set_attribute(ruleIndex, attributeIndex, att);
+      },
+
+      /**
+       * On change event on `attribute operator` select. Changes the attribute operator.
+       *
+       * @param {!required} evt {Event} The event fired.
+       * @param {!required} ruleIndex {Number} The position of the rule in the StylesheetRule.
+       * @param {!required} attributeIndex {Number} The position of the attribute sub-rule in the rule.
+       *
+       * @method _onAttributeOperatorChange
+       */
+      _onAttributeOperatorChange: function(evt, ruleIndex, attributeIndex) {
+        var att = this._currentStylesheetRule.get_attribute(ruleIndex, attributeIndex);
+        att.operator = evt.target.selectedItem.value;
+        this._currentStylesheetRule.set_attribute(ruleIndex, attributeIndex, att);
+      },
+
+      /**
+       * On change event on `attribute value` input. Changes the attribute value.
+       *
+       * @param {!required} evt {Event} The event fired.
+       * @param {!required} ruleIndex {Number} The position of the rule in the StylesheetRule.
+       * @param {!required} attributeIndex {Number} The position of the attribute sub-rule in the rule.
+       *
+       * @method _onAttributeNameChange
+       */
+      _onAttributeValueChange: function(evt, ruleIndex, attributeIndex) {
+        var att = this._currentStylesheetRule.get_attribute(ruleIndex, attributeIndex);
+        att.value = evt.target.value;
+        this._currentStylesheetRule.set_attribute(ruleIndex, attributeIndex, att);
+      },
+
+      /**
+       * On click event on `add attribute` icon. Create a new attribute sub_rule and generate DOM container.
+       *
+       * @param {!required} evt {Event} The event fired.
+       * @param {!required} ruleIndex {Number} The position of the rule in the StylesheetRule.
+       *
+       * @method _onAddAttributeClick
+       */
+      _onAddAttributeClick: function(evt, ruleIndex) {
+        var attIndex = this._currentStylesheetRule.add_attribute(ruleIndex, null, null, null);
+        var att_container = this._generateAttributeContainer(ruleIndex, attIndex, this._currentStylesheetRule.get_attribute(ruleIndex, attIndex));
+        var div_parent = evt.target['parent-div-to-push'];
+        div_parent.appendChild(att_container);
+      },
+
+      /**
+       * On click event on `delete attribute` icon. Delete the attribute.
+       *
+       * @param {!required} evt {Event} The event fired.
+       * @param {!required} ruleIndex {Number} The position of the rule in the StylesheetRule.
+       * @param {!required} attributeIndex {Number} The position of the attribute sub-rule in the rule.
+       *
+       * @method _onAttributeNameChange
+       */
+      _onDeleteAttributeClicked: function(evt, ruleIndex, attributeIndex) {
+        this._currentStylesheetRule.delete_attribute(ruleIndex, attributeIndex);
+        var div_parent = evt.target.get('parent-div-to-del');
+        div_parent.parentNode.removeChild(div_parent);
+      },
+
+      /**
+       * On click event on `delete rule` icon. Delete the rule.
+       *
+       * @param {!required} evt {Event} The event fired.
+       * @param {!required} ruleIndex {Number} The position of the rule in the StylesheetRule.
+       *
+       * @method _onDeleteRuleClicked
+       */
+      _onDeleteRuleClicked: function(evt, ruleIndex) {
+        this._currentStylesheetRule.delete_rule(ruleIndex);
+        var div_parent = evt.target.get('parent-div-to-del');
+        div_parent.parentNode.removeChild(div_parent);
+      },
+
+      _onApplyStylesheetRule: function(){
+        this.fire('stylesheet-editor-apply', {
+          'rule': this._currentStylesheetRule.clone()
+        });
+        this.clearRule();
+      },
+
+      /** ----------------------------------------------------------------------
+      // MARK: Functions : utils
+      **/
+
+      /**
+       * Generate a rule container.
+       *
+       * @param {!required} ruleIndex {Number} The position of the rule of the attribute in the StylesheetRule.
+       * @param {!required} rule {Object} The rule.
+       *
+       * @method _generateRuleContainer
+       */
+      _generateRuleContainer: function(ruleIndex, rule) {
+        // Init the rule.
+        rule = rule || {};
+        // Create the add attribute icon.
+        var ii_aa = document.createElement('iron-icon');
+        ii_aa.classList.add('clickable');
+        ii_aa.set('icon', 'icons:add');
+        ii_aa.title = this.localize('add-attribute');
+        ii_aa.addEventListener('click', function(e) {
+          this._onAddAttributeClick(e, ruleIndex);
+        }.bind(this));
+        // Create the add attribute div.
+        var div_aa = document.createElement('div');
+        div_aa.classList.add('flex-horizontal','flex-equal-around-justified');
+        div_aa.style.border = 'solid 1px gray';
+        div_aa.style.width = '100%';
+        div_aa.appendChild(ii_aa);
+        // Create the attributes containers.
+        var cont_atts = [];
+        for (var i = 0; i < rule.attributes.length; i++)
+          cont_atts.push(this._generateAttributeContainer(ruleIndex, i, rule.attributes[i]));
+        // Create the attributes container.
+        var div_atts = document.createElement('div');
+        for (var i = 0; i < cont_atts.length; i++)
+          div_atts.appendChild(cont_atts[i]);
+        // Create the delete icon.
+        var ii_del = document.createElement('iron-icon');
+        ii_del.style.width = '20px';
+        ii_del.set('icon', 'icons:close');
+        ii_del.classList.add('fgError', 'fgErrorH');
+        ii_del.title = this.localize('delete-rule')
+        ii_del.addEventListener('click', function(e) {
+          this._onDeleteRuleClicked(e, ruleIndex);
+        }.bind(this));
+        // Create the delete sub div.
+        var sdiv_del = document.createElement('div');
+        sdiv_del.appendChild(ii_del);
+        // Create the delete  div.
+        var div_del = document.createElement('div');
+        div_del.style.width = '30px';
+        div_del.classList.add('flex-horizontal','flex-equal-around-justified');
+        div_del.appendChild(sdiv_del);
+        // Create thetype input.
+        var pi_type = document.createElement('paper-input');
+        pi_type.set('label', 'type');
+        pi_type.set('value', this._uriToName(rule.type));
+        pi_type.addEventListener('change', function(e) {
+          this._onTypeNameChange(e, ruleIndex);
+        }.bind(this));
+        // Create the type div.
+        var div_type = document.createElement('div');
+        div_type.classList.add('flexchild');
+        div_type.appendChild(pi_type);
+        // Create the div for type + delete icon.
+        var div_td = document.createElement('div');
+        div_td.classList.add('flex-horizontal');
+        div_td.style.width = '100%';
+        div_td.appendChild(div_type);
+        div_td.appendChild(div_del);
+        // Create the main div.
+        var div_main = document.createElement('div');
+        div_main.classList.add('flex-vertical', 'sub-rule-div');
+        div_main.appendChild(div_td);
+        div_main.appendChild(div_atts);
+        div_main.appendChild(div_aa);
+        ii_aa.set('parent-div-to-push', div_atts);
+        ii_del.set('parent-div-to-del', div_main);
+        return div_main;
+      },
+
+      /**
+       * Generate an attribute sub-rule container.
+       *
+       * @param {!required} ruleIndex {Number} The position of the rule of the attribute in the StylesheetRule.
+       * @param {!required} attributeIndex {Number} The position of the attribute sub-rule in the rule.
+       * @param {!required} attribute {Object} The attribute sub-rule.
+       *
+       * @method _generateAttributeContainer
+       */
+      _generateAttributeContainer: function(ruleIndex, attributeIndex, attribute) {
+        // Init attribute.
+        attribute = attribute || {};
+        // Create the delete icon.
+        var ii_del = document.createElement('iron-icon');
+        ii_del.style.width = '20px';
+        ii_del.set('icon', 'icons:close');
+        ii_del.title = this.localize('remove-attribute');
+        ii_del.classList.add('fgError', 'fgErrorH');
+        ii_del.addEventListener('click', function(e) {
+          this._onDeleteAttributeClicked(e, ruleIndex, attributeIndex);
+        }.bind(this));
+        // Create the delete sub div.
+        var sdiv_del = document.createElement('div');
+        sdiv_del.appendChild(ii_del);
+        // Create the delete  div.
+        var div_del = document.createElement('div');
+        div_del.style.width = '30px';
+        div_del.classList.add('flex-horizontal','flex-equal-around-justified');
+        div_del.appendChild(sdiv_del);
+        // Create the value input.
+        var pi_val = document.createElement('paper-input');
+        pi_val.set('label', 'Attribute value');
+        pi_val.set('value', attribute.value);
+        pi_val.addEventListener('change', function(e) {
+          this._onAttributeValueChange(e, ruleIndex, attributeIndex);
+        }.bind(this));
+        // Create the value div.
+        var div_val = document.createElement('div');
+        div_val.style.marginLeft = '2px';
+        div_val.appendChild(pi_val);
+        // Create the different operator items.
+        function dcpi() {
+          return document.createElement('paper-item');
+        }
+        var pi_ops = [dcpi(), dcpi(), dcpi(), dcpi(), dcpi()];
+        pi_ops[0].set('value', '==');
+        pi_ops[0].textContent = '=';
+        pi_ops[1].set('value', '>');
+        pi_ops[1].textContent = '>';
+        pi_ops[2].set('value', '>=');
+        pi_ops[2].textContent = '>=';
+        pi_ops[3].set('value', '<');
+        pi_ops[3].textContent = '<';
+        pi_ops[4].set('value', '<=');
+        pi_ops[4].textContent = '<=';
+        // Create the operator listbox.
+        var operatorIndex = 0;
+        if (attribute.operator) {
+          if (attribute.operator === ">") operatorIndex = 1;
+          else if (attribute.operator === ">=") operatorIndex = 2;
+          else if (attribute.operator === "<") operatorIndex = 3;
+          else if (attribute.operator === "<=") operatorIndex = 4;
+        }
+        var pl_op = document.createElement('paper-listbox');
+        pl_op.classList.add('dropdown-content');
+        pl_op.set('selected', operatorIndex);
+        pl_op.addEventListener('iron-select', function(e) {
+          this._onAttributeOperatorChange(e, ruleIndex, attributeIndex);
+        }.bind(this));
+        for (var i = 0; i < pi_ops.length; i++)
+          pl_op.appendChild(pi_ops[i]);
+        // Create the operator dropdown-menu.
+        var pdm_op = document.createElement('paper-dropdown-menu');
+        pdm_op.set('label', 'operator');
+        pdm_op.appendChild(pl_op);
+        // Create the operator div.
+        var div_op = document.createElement('div');
+        div_op.style.width = '80px';
+        div_op.appendChild(pdm_op);
+        // Create attribute name input.
+        var pi_att_name = document.createElement('paper-input');
+        pi_att_name.set('label', 'Attribute name');
+        pi_att_name.set('value', this._uriToName(attribute.uri));
+        pi_att_name.addEventListener('change', function(e) {
+          this._onAttributeNameChange(e, ruleIndex, attributeIndex);
+        }.bind(this));
+        // Create attribute name input div
+        var div_att_name = document.createElement('div');
+        div_att_name.style.marginRight = '2px';
+        div_att_name.appendChild(pi_att_name);
+        // Create main div
+        var div_main = document.createElement('div');
+        div_main.classList.add('flex-horizontal','attribute-container', 'flex-equal-justified');
+        div_main.appendChild(div_att_name);
+        div_main.appendChild(div_op);
+        div_main.appendChild(div_val);
+        div_main.appendChild(div_del);
+        ii_del.set('parent-div-to-del', div_main);
+        // Return the little component
+        return div_main;
+      },
+
+      _getHexColorFromPicker: function() {
+        return "#" +
+          ("0" + parseInt(this._colorFromPicker['red'], 10).toString(16)).slice(-2) +
+          ("0" + parseInt(this._colorFromPicker['green'], 10).toString(16)).slice(-2) +
+          ("0" + parseInt(this._colorFromPicker['blue'], 10).toString(16)).slice(-2);
+      },
+
+      _uriToName: function(uri) {
+        return (uri) ? uri.replace(this.modelUri + '#', '') : uri;
+      },
+
+      _nameToUri: function(name) {
+        return this.modelUri + '#' + name;
+      },
+
+      createNewStylesheetRule: function(json) {
+        function StylesheetRule(json) {
+          // StylesheetRule properties
+          json = json || {};
+          this.id = json.id || "";
+          this.symbol = json.symbol || {
+            'color': '#000000',
+            'shape': 'CIRCLE'
+          };
+          this.rules = json.rules || [];
+          this.visible = json.visible || true;
+          // Set the id of the StylesheetRule
+          this.set_id = function(id) {
+            this.id = id;
+          }
+          // Return true if the id is unique in `template`. False otherwise.
+          this.is_unique = function(template) {
+            for (var i = 0; i < template.length; i++) {
+              if (template[i].id === this.id) return false;
+            }
+            return true;
+          }
+          // Set the symbol of the rule.
+          this.set_symbol = function(color, shape) {
+            this.symbol.color = color || this.symbol.color;
+            this.symbol.shape = shape || this.symbol.shape;
+          }
+          // Retrieve the json object of the rule.
+          this.get_json = function() {
+            return {
+              'id': this.id,
+              'symbol': this.symbol,
+              'rules': this.rules
+            }
+          }
+          // Add a rue or create a new one (empty). Returns the index of the created rule.
+          this.add_rule = function(rule) {
+            (rule) ? this.rules.push(rule): this.rules.push({
+              'type': null,
+              'attributes': []
+            });
+            return this.rules.length - 1;
+          }
+          // Delete a rule.
+          this.delete_rule = function(indexRule, indexAttribute) {
+            this.rules.splice(indexRule, 1);
+          }
+          // Returns the rule at the index.
+          this.get_rule = function(index) {
+            return this.rules[index];
+          }
+          // Returns a clone of a rule.
+          this.clone_rule = function(rule) {
+            return JSON.parse(JSON.stringify(rule));
+          }
+          this.clone = function(){
+            return JSON.parse(JSON.stringify({
+              'id': this.id,
+              'symbol': this.symbol,
+              'rules': this.rules,
+              'visible': this.visible
+            }));
+          }
+          // Returns the rules of the StylesheetRule.
+          this.get_rules = function() {
+            return this.rules;
+          }
+          // Set the rule at an index.
+          this.set_rule = function(index, rule) {
+            this.rules[index] = rule;
+          }
+          // Get an attribute sub-rule
+          this.get_attribute = function(indexRule, indexAttribute) {
+            return this.rules[indexRule].attributes[indexAttribute];
+          }
+          // Set the attribute sub-rule
+          this.set_attribute = function(indexRule, indexAttribute, attribute) {
+            this.rules[indexRule].attributes[indexAttribute] = attribute;
+          }
+          // Delete and attribute sub-rule
+          this.delete_attribute = function(indexRule, indexAttribute) {
+            this.rules[indexRule].attributes.splice(indexAttribute, 1);
+          }
+          // Add an attribute at an index. Returns the index of the attribute.
+          this.add_attribute = function(index, uri, operator, value) {
+            this.rules[index].attributes.push({
+              'uri': uri,
+              'operator': operator,
+              'value': value
+            });
+            return this.rules[index].attributes.length - 1;
+          }
+          // Set the type of a rule at an index.
+          this.set_type = function(index, uri) {
+            this.rules[index].type = uri;
+          }
+        };
+
+        return new StylesheetRule(json);
+      },
+
+      /** ------------------------------------------------------------------------
+      // MARK: Functions: Colors picker
+      **/
+
+      _onColorPickerSelected: function() {
+        this.$.symbolIconPreview.style.color = this.$['rule-color'].color;
+        this._currentStylesheetRule.set_symbol(this.$['rule-color'].color);
+      }
+
+    });
+  </script>
+</dom-module>

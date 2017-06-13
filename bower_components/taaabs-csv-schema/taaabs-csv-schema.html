@@ -1,0 +1,354 @@
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="../taaabs-csv-collector/taaabs-csv-collector-behavior.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../notify-toast-behavior/notify-toast-behavior.html">
+<link rel="import" href="taaabs-csv-schema-config.html">
+<dom-module id="taaabs-csv-schema">
+  <template>
+
+    <style include="taaabs-theme"></style>
+    <style>
+
+      :host{
+        width: 100%;
+        display: block;
+        padding-left: 0px;
+        padding-right: 0px;
+      }
+
+    </style>
+
+    <div class="fit-width flex-horizontal flex-equal-around-justified">
+      <div style="width: 1000px">
+        <taaabs-csv-collector-steps id="tccs" language="[[language]]" steps="[[_steps]]"></taaabs-csv-collector-steps>
+      </div>
+    </div>
+
+    <iron-pages class="fit-width" selected="{{_pageIndex}}">
+
+      <div style="max-width: 1000px; margin: 0 auto">
+        <taaabs-csv-collector-files id="tccf" files="{{files}}" file-reader={{fileReader}} language="{{language}}"></taaabs-csv-collector-files>
+      </div>
+
+      <div  style="max-width: 1000px; margin: 0 auto">
+        <taaabs-csv-collector-configs id="tccc" csv-schemas="[[csvSchemas]]">
+        </taaabs-csv-collector-configs>
+      </div>
+
+      <div class="fit-width">
+        <taaabs-csv-schema-config id="tcsc" file-reader="[[fileReader]]" csv-schemas="[[csvSchemas]]" csv-schema="{{csvSchema}}" language="{{language}}">
+        </taaabs-csv-schema-config>
+      </div>
+
+      <div style="max-width: 1000px; margin: 0 auto">
+        <taaabs-csv-collector-finalize id="tccfi" csv-schema-id="[[csvSchema.id]]" language="{{language}}"></taaabs-csv-collector-finalize>
+      </div>
+
+    </iron-pages>
+
+    <!-- Notify toast -->
+    <paper-toast id="__notify_toast__" style="background-color:rgba(0,0,0,0.67)" duration=0> </paper-toast>
+
+  </template>
+
+  <script>
+    /* global Polymer */
+
+    /**
+     * `taaabs-csv-schema` is graphical element in which the user can edit the properties of a trace csv file.
+     *
+     * ### Example :
+     *
+     * A `taaabs-csv-schema` not preset
+     *
+     *     <taaabs-csv-schema></taaabs-csv-schema>
+     *
+     * A `taaabs-csv-schema` with all its attributes preset
+     *
+     *      <taaabs-csv-schema  id="csvSchema"
+     *                   csv-schemas="{{csvSchemas}}"
+     *                   base="{{base}}"
+     *                   files="{{files}}"
+     *                   csv-schema="{{csvSchema}}">
+     *      </taaabs-csv-schema>
+     *
+     * @element taaabs-csv-schema
+     */
+    Polymer({
+
+      is: 'taaabs-csv-schema',
+
+      /**
+       * Fired when the `taaabs-csv-schema` uploaded the csvSchemas, adn the user chose to continue the process.
+       *
+       * @event schema-save-next
+       */
+
+      /**
+       * Fired when the `taaabs-csv-schema` uploaded the csvSchemas, adn the user chose not to continue the process.
+       *
+       * @event schema-exit
+       */
+
+      /**
+       * Fired when the user chose to create a new schema.
+       *
+       * @event schema-create
+       */
+
+      properties: {
+
+        /**
+         * Array of step for the `taaabs-csv-collector-steps`.
+         *
+         * @attribute _steps
+         * @type Array
+         */
+        _steps: {
+          type: Array,
+          value: [{
+              'name': 'file selection',
+              'state': 'current'
+            },
+            {
+              'name': 'import-config initialisation',
+              'state': 'undone'
+            },
+            {
+              'name': 'import configuration',
+              'state': 'undone'
+            },
+            {
+              'name': 'finalize',
+              'state': 'undone'
+            }
+          ]
+        },
+
+        /**
+         * Index of the current page section of the iron-pages.
+         *
+         * @attribute _pageIndex
+         * @type Number
+         */
+        _pageIndex: {
+          type: Number,
+          notify: true,
+          value: function() {
+            return 0;
+          }
+        },
+
+        _isNewSchema: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        fileReader: {
+          type: Object,
+          notify: true,
+        },
+
+        files: {
+          type: Array,
+          notify: true
+        },
+
+        /**
+         * Localization.
+         * fr, en.
+         *
+         * @attribute language
+         * @type String
+         */
+        language: {
+          type: String,
+          notify: true
+        }
+      },
+
+      behaviors: [
+        Polymer.AppLocalizeBehavior,
+        NotifyToastBehavior,
+        TaaabsCSVCollectorBehavior
+      ],
+
+      listeners: {},
+
+      ready: function() {
+        // Load i18n json.
+        this.loadResources(this.resolveUrl('./languages/locales.json'));
+        // When the user chooses a step.
+        this.$.tccs.addEventListener('step-clicked', function(e) {
+          this._goToPage(e.detail.index);
+        }.bind(this))
+        // When the user chooses a file.
+        this.$.tccf.addEventListener('files-selected', function() {
+          this._goToPage(1);
+        }.bind(this));
+        // When the user chooses to create a new schema.
+        this.$.tccc.addEventListener('create-schema', function() {
+          this.set('csvSchema', this._createCsvSchema());
+          this.set('_isNewSchema', true);
+          this.$.tcsc.getSampleFromCsv();
+          this._goToPage(2);
+        }.bind(this));
+        // When the user chooses to edit an existing schema.
+        this.$.tccc.addEventListener('select-schema', function(e) {
+          var id = this.csvSchemas[e.detail.index].id;
+          this.set('csvSchema', this._cloneCsvSchemas(id));
+          this.set('_isNewSchema', false);
+          this.$.tcsc.getSampleFromCsv();
+          this._goToPage(2);
+        }.bind(this))
+        // When the user finished a schema edition.
+        this.$.tcsc.addEventListener('CONFIG_EDITED', function() {
+          if(this.csvSchema.id === ""){
+            this.notifyToast(this.localize('empty-id'),{
+              type:'Error',
+              timeout: -1
+            })
+          }
+          else if(!this._isIdValid(this.csvSchema.id, this._isNewSchema)){
+            this.notifyToast(this.localize('invalid-id'),{
+              type:'Error',
+              timeout: -1
+            })
+          }
+          else{
+            this._goToPage(3);
+          }
+        }.bind(this))
+        // When the user chooses to continue the upload process.
+        this.$.tccfi.addEventListener('finalize-save-next', function() {
+          this._saveAndNextStep();
+        }.bind(this))
+        // When the user chooses to exit the upload process.
+        this.$.tccfi.addEventListener('finalize-save-exit', function() {
+          this._saveAndExit();
+        }.bind(this))
+        // When the user chooses to export the schema.
+        this.$.tccfi.addEventListener('finalize-export', function() {
+          this._exportSchema();
+        }.bind(this))
+      },
+
+      _goToPage: function(index) {
+        this.set('_pageIndex', index);
+        for (var i = 0; i < this._steps.length; i++) {
+          if (i < index) {
+            this.splice('_steps', i, 1, {
+              'name': this._steps[i].name,
+              'state': 'done'
+            });
+          } else if (i > index) {
+            this.splice('_steps', i, 1, {
+              'name': this._steps[i].name,
+              'state': 'undone'
+            });
+          } else {
+            this.splice('_steps', i, 1, {
+              'name': this._steps[i].name,
+              'state': 'current'
+            });
+          }
+        }
+      },
+
+      ///////////////////////
+      // PROCESS FUNCTIONS //
+      ///////////////////////
+
+      /**
+       * Export `csvSchemas` to a json file.
+       *
+       * @method _exportSchema
+       */
+      _exportSchema: function() {
+        this.set('csvSchema.columns', this._columns);
+
+        var csvContent = "data:text/plain;charset=utf-8,";
+        csvContent += JSON.stringify(this.csvSchemas, null, 2);
+
+        var encodedUri = encodeURI(csvContent);
+        var link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "csvModel.json");
+
+        link.click(); // This will download the data file named "csvModel.json".
+      },
+
+      /**
+       * Upload `csvSchema` to the `base` and call `nextStepFunction`.
+       *
+       * @method _saveAndNextStep
+       * @see `nextStepFunction`
+       */
+      _saveAndNextStep: function() {
+        this.$.tccfi.disableAll();
+        this.notifyToast(this.localize('save-next-loading'),{
+          type:'Log',
+          timeout: -1
+        });
+        // Re-create the csvSchemas
+        var csvSchemas = JSON.parse(JSON.stringify(this.csvSchemas));
+        if(this._isNewSchema){
+          csvSchemas.push(this.csvSchema);
+        }
+        else{
+          for(var i = 0; i < csvSchemas.length; i++){
+            if(csvSchemas[i].id === this.csvSchema.id){
+              csvSchemas[i] = this.csvSchema;
+            }
+          }
+        }
+        // Save the schemas
+        this._saveSchemaOntoBase(csvSchemas, this.base).then(function() {
+          this.$.tccfi.enableAll();
+          this.set('csvSchemas', csvSchemas);
+          this.fire('schema-save-next');
+          this.notifyToast(this.localize('save-next-loading-success'),{
+            type:'Success',
+            timeout: -1
+          });
+        }.bind(this)).catch(function(err) {
+          this.notifyToast('An error occured while trying to save the schema onto the ktbs base. <br/> Details: ' + err, {
+            'type': 'Error',
+            'timeout': 6000
+          });
+        }.bind(this));
+      },
+
+      /**
+       * Upload `csvSchema` to the `base` and call `closeFunction`.
+       *
+       * @method _saveAndExit
+       * @see `closeFunction`
+       */
+      _saveAndExit: function() {
+
+        var that = this;
+
+        var csvContent = JSON.stringify(that.csvSchemas);
+        var new_attr = [
+          ["http://taaabs-hubble/onto#csvCollectorSchemas", csvContent]
+        ];
+
+        that.base.modify_attributes(new_attr)
+          .then(function(data) {
+            that.fire('schema-save-exit');
+          })
+          .catch(function() {
+            console.log(data)
+          });
+      },
+
+      _emptyComponent: function(){
+        this.$.tcsc.set('_parsedData', []);
+      }
+
+    });
+  </script>
+
+</dom-module>

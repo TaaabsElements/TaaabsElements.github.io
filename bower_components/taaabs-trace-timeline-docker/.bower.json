@@ -1,0 +1,49 @@
+{
+  "name": "taaabs-trace-timeline-docker",
+  "description": "A graphical element bundling several trace timeline tools.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-timeline-docker.git"
+  },
+  "main": "taaabs-trace-timeline-docker.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-timeline-docker/LICENSE",
+  "dependencies": {
+    "polymer": "polymer/polymer",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "iron-pages": "PolymerElements/iron-pages#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#<2.*",
+    "taaabs-trace-loader": "TaaabsElements/taaabs-trace-loader",
+    "taaabs-trace-timeline": "TaaabsElements/taaabs-trace-timeline",
+    "taaabs-trace-timeline-container": "TaaabsElements/taaabs-trace-timeline-container",
+    "taaabs-trace-timeline-scroller": "TaaabsElements/taaabs-trace-timeline-scroller",
+    "taaabs-trace-timeline-stylesheet": "TaaabsElements/taaabs-trace-timeline-stylesheet",
+    "taaabs-model-simpleview": "TaaabsElements/taaabs-model-simpleview",
+    "taaabs-obsel-simpleview": "TaaabsElements/taaabs-obsel-simpleview",
+    "golden-layout-component": "https://github.com/Yepikae/golden-layout-component.git",
+    "taaabs-themes": "TaaabsElements/taaabs-themes"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-trace-timeline-docker",
+  "_release": "6b8123dd4f",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "6b8123dd4f1c2d3b0ad6fadecfa8f6642cf13869"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-trace-timeline-docker.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-trace-timeline-docker"
+}

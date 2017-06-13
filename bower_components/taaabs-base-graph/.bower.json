@@ -1,0 +1,40 @@
+{
+  "name": "taaabs-base-graph",
+  "description": "A graphical element that displays the graph of a ktbs base.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs",
+    "sigmajs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-base-graph.git"
+  },
+  "main": "taaabs-base-graph.html",
+  "license": "https://github.com/TaaabsElements/taaabs-base-graph/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#<2.*",
+    "sigma-js-component": "https://github.com/Yepikae/sigma-js-component.git"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-base-graph",
+  "_release": "7b560a791e",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "7b560a791eb40d0213eb90ec32f49c22588c4c6d"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-base-graph.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-base-graph"
+}

@@ -1,0 +1,275 @@
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<dom-module id="taaabs-model-simpleview">
+  <template>
+    <style include="taaabs-theme"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      :host .title {
+        border: solid 1px gray;
+        padding: 5px;
+        font-size: 20px;
+
+        -webkit-transition: color, background-color .2s ease-in-out;
+        -moz-transition: color, background-color .2s ease-in-out;
+        -ms-transition: color, background-color .2s ease-in-out;
+        -o-transition: color, background-color .2s ease-in-out;
+        transition: color, background-color .2s ease-in-out;
+      }
+
+      :host .content {
+        border: solid 1px gray;
+        padding: 5px;
+      }
+
+      :host .content div {
+        padding: 5px;
+      }
+
+      :host .content div:nth-child(2n+1) {
+        background-color: rgba(144, 144, 144, 0.25);
+      }
+
+      :host iron-icon {
+        float: right;
+        cursor: pointer;
+      }
+
+      :host .tinyIcon {
+        height: 20px;
+      }
+
+      :host .childOf {
+        padding-left: 20px;
+        font-size: 11px;
+        cursor: pointer;
+      }
+    </style>
+    <template is="dom-repeat" items="[[_typesWithAttr]]">
+      <div id="t_[[index]]" class="title">
+        [[item.name]] <span class="childOf fgDarkBlueH" on-click="_onChildOfClick" on-mouseenter="_onChildOfEnter" on-mouseleave="_onChildOfLeave" >[[item.parents]]</span>
+        <iron-icon icon="icons:expand-more" on-click="_onCollapseClick"></iron-icon>
+      </div>
+      <iron-collapse id="ic_[[index]]">
+        <div class="content">
+          <template is="dom-repeat" items="[[item.attrList]]">
+            <div>
+              [[item]]
+            </div>
+          </template>
+        </div>
+      </iron-collapse>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'taaabs-model-simpleview',
+
+      properties: {
+        /**
+         * The model.
+         *
+         * @attribute model
+         * @type Object
+         */
+        model: {
+          type: Object,
+          notify: true,
+          value: null
+        },
+
+        /**
+         * The type list with their attributes.
+         *
+         * @attribute _typesWithAttr
+         * @type Array
+         */
+        _typesWithAttr: {
+          type: Array,
+          notify: true,
+          value: []
+        }
+      },
+
+      /**
+       * Refresh the view.
+       *
+       * @method refresh
+       */
+      refresh: function() {
+        // Reset the type list.
+        this.set('_typesWithAttr', []);
+        var types = this.model.list_type_obsels;
+        var attributes = this.model.list_type_attributes;
+
+        var tmp_array = [];
+
+        // List every type and their attributes
+        for (var i = 0; i < types.length; i++) {
+          var typeId = types[i]['@id'];
+          var tmp_type_with_attr = {
+            'id': typeId,
+            'name': this._uriToName(typeId),
+            'attrList': [],
+          };
+          if (types[i].hasSuperObselType)
+            tmp_type_with_attr.parent = types[i].hasSuperObselType[0];
+          // List all the attributes of this type
+          for (var j = 0; j < attributes.length; j++) {
+            for (var k = 0; k < attributes[j].hasAttributeObselType.length; k++) {
+              if (typeId === attributes[j].hasAttributeObselType[k]) {
+                tmp_type_with_attr.attrList.push(this._uriToName(attributes[j]['@id']));
+              }
+            }
+          }
+          tmp_array.push(tmp_type_with_attr);
+        }
+
+        var tree = [];
+        var k = 0;
+        var max = tmp_array.length;
+        while (max > 0 && k < 1000) {
+          i = 0;
+          while (i < max) {
+            if (!tmp_array[i].parent) {
+              tree.push(tmp_array[i]);
+              tmp_array.splice(i, 1);
+              max = tmp_array.length;
+            } else {
+              for (var j = 0; j < tree.length; j++) {
+                if (i < max && tree[j].id === tmp_array[i].parent) {
+                  tmp_array[i].parents = 'child of '+tmp_array[i].parent;
+                  tree.splice(j, 0, tmp_array[i]);
+                  tmp_array.splice(i, 1);
+                  max = tmp_array.length;
+                }
+              }
+            }
+            i++;
+          }
+          k++;
+        }
+        tree.reverse();
+        this.set('_typesWithAttr', tree);
+      },
+
+      addSelectionEvent: function(name, iconName, callback) {
+
+        var icon = null;
+
+        var eventFunction = function(index, evt) {
+          callback(evt, {
+            'obj': 'type',
+            'name': this._typesWithAttr[index].id
+          });
+        };
+
+        var eventFunction2 = function(indexType, indexAttr, evt) {
+          callback(evt, {
+            'obj': 'attribute',
+            'name': this._typesWithAttr[indexType].attrList[indexAttr]
+          });
+        };
+
+        for (var i = 0; i < this._typesWithAttr.length; i++) {
+          icon = document.createElement('iron-icon');
+          icon.icon = iconName;
+          //icon.addEventListener('click', eventFunction.bind(this, i));
+          icon.addEventListener('click', eventFunction.bind(this, i));
+          var id = '#t_' + i;
+          this.$$(id).appendChild(icon);
+          // Get the divs of the attributes of the current type
+          id = '#ic_' + i;
+          var fc = this.$$(id).childNodes;
+          var j = 0;
+          while (fc[j].nodeName != 'DIV') {
+            j++;
+          }
+          var divs_tmp = fc[j].childNodes;
+          var divs = [];
+          for (j = 0; j < divs_tmp.length; j++)
+            if (divs_tmp[j].nodeName === 'DIV') divs.push(divs_tmp[j]);
+            // Set the event for each attribute of the curren type
+          for (j = 0; j < this._typesWithAttr[i].attrList.length; j++) {
+            icon = document.createElement('iron-icon');
+            icon.icon = iconName;
+            icon.classList.add('tinyIcon');
+            icon.addEventListener('click', eventFunction2.bind(this, i, j));
+            divs[j].appendChild(icon);
+          }
+        }
+      },
+
+      _uriToName: function(uri) {
+        return (uri) ? uri.replace(this.model.uri + '#', '') : uri;
+      },
+
+      _nameToUri: function(name) {
+        return this.model.uri + '#' + name;
+      },
+
+      _onCollapseClick: function(evt) {
+        var id = '#ic_' + evt.model.index;
+        var content = this.$$(id);
+        content.toggle();
+
+        var fc = content.childNodes;
+
+        var i = 0;
+        while (fc[i].nodeName != 'DIV') {
+          i++;
+        }
+
+        var divs_tmp = fc[i].childNodes;
+        var divs = [];
+        for (i = 0; i < divs_tmp.length; i++)
+          if (divs_tmp[i].nodeName === 'DIV') divs.push(divs_tmp[i]);
+
+      },
+
+      _onChildOfEnter: function(evt){
+        var item = evt.model.item;
+        var i = 0;
+        while(i < this._typesWithAttr.length){
+          if(this._typesWithAttr[i].id === item.parent){
+            var id = '#t_'+i;
+            this.$$(id).classList.add('bgDarkBlue','fgWhite');
+            i = this._typesWithAttr.length;
+          }
+          i++;
+        }
+      },
+
+      _onChildOfLeave: function(evt){
+        var item = evt.model.item;
+        var i = 0;
+        while(i < this._typesWithAttr.length){
+          if(this._typesWithAttr[i].id === item.parent){
+            var id = '#t_'+i;
+            this.$$(id).classList.remove('bgDarkBlue','fgWhite');
+            i = this._typesWithAttr.length;
+          }
+          i++;
+        }
+      },
+
+      _onChildOfClick: function(evt){
+        var item = evt.model.item;
+        var i = 0;
+        while(i < this._typesWithAttr.length){
+          if(this._typesWithAttr[i].id === item.parent){
+            var id = '#ic_' + i;
+            var content = this.$$(id);
+            content.toggle();
+          }
+          i++;
+        }
+      }
+    });
+  </script>
+</dom-module>

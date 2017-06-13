@@ -1,0 +1,306 @@
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="../notify-toast-behavior/notify-toast-behavior.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<dom-module id="taaabs-base-create">
+  <template>
+    <style include="taaabs-theme"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      :host .editIcons {
+        float: right;
+        cursor: pointer;
+      }
+      :host #errorMsg {
+        width: 100%;
+      }
+    </style>
+      <div id="main-page">
+        <h3> {{localize('title')}} </h3>
+        <div class="fit-width">
+          <div class="fit-width">
+            [[localize('source-url')]] : [[baseRelativeUrl]]
+          </div>
+          <div class="fit-width">
+            <paper-input id="base-id-input" class="fit-width" label="[[localize('base-id')]]" value="{{_baseId}}"></paper-input>
+          </div>
+          <div class="fit-width">
+            <paper-input id="base-label-input" class="fit-width" label="[[localize('base-label')]]" value="{{_baseLabel}}"></paper-input>
+          </div>
+          <div class="fit-width">
+            <paper-textarea id="base-comment-input" class="fit-width" label="[[localize('base-comment')]]" value="{{_baseComment}}"></paper-textarea>
+          </div>
+        </div>
+        <div class="flex-reversed">
+          <paper-button id="validate-btn" raised disabled noink on-click="_onValidateClick">[[localize('validate')]]</paper-button>
+          <paper-button id="cancel-btn" raised noink on-click="_onCancelClick">[[localize('cancel')]]</paper-button>
+        </div>
+      </div>
+
+    <!-- Notify toast -->
+    <paper-toast id="__notify_toast__" style="background-color:rgba(0,0,0,0.37)" duration=0> </paper-toast>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'taaabs-base-create',
+
+      properties: {
+
+        /**
+         * Either the future root ktbs, or the root base.
+         *
+         * @attribute source
+         * @type String
+         */
+        baseUrl: {
+          type: String,
+          notify: true,
+          value: ""
+        },
+
+        baseRelativeUrl: {
+          type: String,
+          notify: true,
+          value: ""
+        },
+
+        _base: {
+          type: Object,
+          notify: true,
+          observer: '_onBaseChange'
+        },
+
+        taaabsCentralLoading: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        /**
+         * Set to true if the new base will be created in an exisiting base.
+         * Set to false otherwise.
+         *
+         * @attribute inBase
+         * @type Boolean
+         */
+        inBase: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        _loadingBaseToast: {
+          type: Number,
+          notify: true
+        },
+
+        _creatingBaseToast: {
+          type: Number,
+          notify: true
+        },
+
+        /**
+         * The future base Id.
+         *
+         * @attribute _baseId
+         * @type String
+         */
+        _baseId: {
+          type: String,
+          notify: true,
+          value: '',
+          observer: '_baseIdChanged'
+        },
+
+        /**
+         * The future base label.
+         *
+         * @attribute _baseLabel
+         * @type String
+         */
+        _baseLabel: {
+          type: String,
+          notify: true
+        },
+
+        /**
+         * The future base comment.
+         *
+         * @attribute _baseComment
+         * @type String
+         */
+        _baseComment: {
+          type: String,
+          notify: true,
+          value: ''
+        },
+
+        /**
+         * True if the base id is onvalid.
+         * False otherwise.
+         *
+         * @attribute _invalidId
+         * @type Boolean
+         */
+        _validId: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        /**
+         * Url of the created base.
+         *
+         * @attribute _newBaseUrl
+         * @type String
+         */
+        _newBaseUrl: {
+          type: String,
+          notify: true,
+          value: ''
+        },
+
+        /**
+         * Localization.
+         * fr, en.
+         *
+         * @attribute language
+         * @type String
+         */
+        language: {
+          type: String,
+          notify: true,
+        },
+      },
+
+      listeners: {
+        'base-id-input.change': '_onBaseIdInputChange'
+      },
+
+      behaviors: [
+        Polymer.AppLocalizeBehavior,
+        NotifyToastBehavior
+      ],
+
+      ready: function() {},
+
+      attached: function() {
+        // Load i18n json.
+        this.loadResources(this.resolveUrl('./language/locales.json'));
+      },
+
+      /**
+       * Reset the base Id, label & comment.
+       *
+       * @method refresh
+       */
+      refresh: function() {
+        this.set('_baseId', '');
+        this.set('_baseLabel', '');
+        this.set('_baseComment', '');
+        // If we use a resoure-loader, well, we let it load the resources then.
+        if (this.taaabsCentralLoading)
+          this.fire('GET_RESOURCE', {
+            url: this.baseUrl,
+            obj: "_base"
+          });
+        // Otherwise, set _base with a new Samotrace.Base.
+        else
+          this.set('_base', new Samotraces.Ktbs.Base(this.baseUrl));
+      },
+
+      _onBaseChange: function(){
+      },
+
+      /** ----------------------------------------------------------------------
+      // MARK: Input change listeners
+      **/
+
+      _onBaseIdInputChange: function(){
+        var forbidden_names = [];
+        for(var i = 0; i < this._base.contains.length; i++){
+          forbidden_names.push(this._base.contains[i]['@id'].replace('/',''));
+        }
+        var forbidden_symbols = [' ', '/', '#', '-'];
+        if( forbidden_names.indexOf(this._baseId) !== -1 ){
+          this.$['validate-btn'].set('disabled', true);
+          this.$['base-id-input'].set('errorMessage', this.localize('id-already-exists'));
+          this.$['base-id-input'].set('invalid', true);
+          this.set('_validId', false);
+        }
+        else{
+          var valid = true;
+          for(var i = 0; i < forbidden_symbols.length; i++){
+            if(this._baseId.indexOf(forbidden_symbols[i]) !== -1){
+              valid = false;
+              this.$['base-id-input'].set('errorMessage', this.localize('invalid-symbol-part-1')+forbidden_symbols[i]+this.localize('invalid-symbol-part-2'));
+              this.$['base-id-input'].set('invalid', true);
+              i = forbidden_symbols.length;
+            }
+          }
+          if(valid){
+            this.$['validate-btn'].set('disabled', false);
+            this.$['base-id-input'].set('invalid', false);
+          }
+          this.set('_validId', valid);
+        }
+      },
+
+
+      /**
+       * Called on `cancel` click.
+       *
+       * @method _onCancelClick
+       */
+      _onCancelClick: function() {
+        this.fire('base-creation-canceled');
+      },
+
+      _onValidateClick: function() {
+        var cbt = this.notifyToast(this.localize('submit-base-loading'), {
+          type: 'Loading',
+          timeout: -1
+        })
+        this.set('_creatingBaseToast', cbt);
+        this._submit();
+      },
+
+      /**
+       * Called on `subit` click. Create the new base.
+       *
+       * @method _submit
+       */
+      _submit: function() {
+        this._base.create_base(this._baseId, this._baseLabel, this._baseComment)
+          .then(function(base) {
+            this.closeToast(this._creatingBaseToast);
+            var new_base_path = this.baseRelativeUrl + this._baseId + '/';
+            this.set('_baseId', '');
+            this.set('_baseLabel', '');
+            this.set('_baseComment', '');
+            this.fire('base-created', {
+              base_path: new_base_path
+            });
+          }.bind(this))
+          .catch(function(err) {
+            this.closeToast(this._creatingBaseToast);
+            this.set('_baseId', '');
+            this.set('_baseLabel', '');
+            this.set('_baseComment', '');
+            this.notifyToast(this.localize('submit-error'),{
+              type: 'Error',
+              timeout: -1
+            })
+          }.bind(this));
+      }
+    });
+  </script>
+</dom-module>

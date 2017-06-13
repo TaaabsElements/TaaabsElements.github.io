@@ -1,0 +1,47 @@
+{
+  "name": "taaabs-csv-collector",
+  "description": "A graphical element in which the user can edit a trace model from some csv files, and then upload the traces.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-csv-collector.git"
+  },
+  "main": "taaabs-csv-collector.html",
+  "license": "https://github.com/TaaabsElements/taaabs-csv-collector/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "taaabs-themes": "TaaabsElements/taaabs-themes",
+    "file-reader": "TaaabsElements/file-reader",
+    "taaabs-csv-schema": "TaaabsElements/taaabs-csv-schema",
+    "taaabs-csv-to-ktbs": "TaaabsElements/taaabs-csv-to-ktbs",
+    "taaabs-csv-to-ktbsmodel": "TaaabsElements/taaabs-csv-to-ktbsmodel",
+    "paper-dialog": "PolymerElements/paper-dialog#<2.*",
+    "iron-icon": "PolymerElements/iron-icon#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "notify-toast-behavior": "Yepikae/notify-toast-behavior",
+    "paper-button": "PolymerElements/paper-button#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-csv-collector",
+  "_release": "ba07b950fd",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "ba07b950fd38515ac9c67ddc4d13257f21657aaa"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-csv-collector.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-csv-collector"
+}

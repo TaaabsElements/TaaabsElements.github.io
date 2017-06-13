@@ -1,0 +1,34 @@
+{
+    "en": {
+      "baseInformations": "Base details",
+      "storedTraces": "Stored traces",
+      "computedTraces": "Computed traces",
+      "traceModels": "Trace models",
+      "methods": "Methods",
+      "editIcon": "Edit",
+      "editCancelIcon": "Cancel",
+      "editSubmitIcon": "Submit",
+      "open-in-tab": "Open in new tab",
+      "delete": "Delete",
+      "deleteConfirm": "Do you want to permanently remove",
+      "edit-your-base": "Edit your base",
+      "base-label": "Base label",
+      "base-comment": "Base comment"
+    },
+    "fr": {
+      "baseInformations": "Informations sur la base",
+      "storedTraces": "Traces primaires",
+      "computedTraces": "Traces transformées",
+      "traceModels": "Modèles de trace",
+      "methods": "Méthodes",
+      "editIcon": "Éditer",
+      "editCancelIcon": "Annuler",
+      "editSubmitIcon": "Valider",
+      "open-in-tab": "Ouvrir dans un nouvel onglet",
+      "delete": "Supprimer",
+      "deleteConfirm": "Voulez-vous supprimer définitivement",
+      "edit-your-base": "Éditer votre base",
+      "base-label": "Label de la base",
+      "base-comment": "Commentaire de la base"
+    }
+}

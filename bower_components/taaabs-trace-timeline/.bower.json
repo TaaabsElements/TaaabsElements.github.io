@@ -1,0 +1,38 @@
+{
+  "name": "taaabs-trace-timeline",
+  "description": "A graphical component that displays a trace as a timeline.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-timeline.git"
+  },
+  "main": "taaabs-trace-timeline.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-timeline/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#<2.*",
+    "pixi-js-component": "https://github.com/Yepikae/pixi-js-component.git"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-trace-timeline",
+  "_release": "12f1aec0f0",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "12f1aec0f0017eccaefd96605070a766874a8695"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-trace-timeline.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-trace-timeline"
+}

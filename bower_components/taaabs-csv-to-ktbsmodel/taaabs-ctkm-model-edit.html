@@ -1,0 +1,515 @@
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="./taaabs-ctkm-sticker.html">
+<link rel="import" href="../notify-toast-behavior/notify-toast-behavior.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<dom-module id="taaabs-ctkm-model-edit">
+  <template>
+    <style include="taaabs-theme"></style>
+    <style>
+      :host {
+        width: 100%;
+        display: block;
+      }
+      :host #container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      :host .attributesRow:nth-child(2n),
+      .typesRow:nth-child(2n) {
+        background-color: var(--paper-grey-200);
+      }
+      :host .editIcons {
+        float: right;
+      }
+      :host .subTitle {
+        text-transform: uppercase;
+        font-weight: normal;
+        font-size: 10px;
+      }
+      :host #attributesTitle{
+        background-color: var(--paper-grey-200);
+      }
+      :host #type-title{
+        background-color: var(--paper-grey-200);
+      }
+    </style>
+    <div id="container">
+      <iron-icon icon="icons:forward" class="editIcons fgSuccess fgSuccessH hoverable clickable" on-click="_submit"></iron-icon>
+      <h4> [[localize('title')]] ( <span class="subTitle">{{csvSchema.id}}</span> )</h4>
+
+      <p> [[localize('obsel-type-column')]]:
+        <iron-icon icon="icons:visibility" title="[[localize('otc-visibility')]]" on-click="_onToggleSamplePanelClick"></iron-icon>
+        <iron-icon class="fgLog fgLogH hoverable clickable" icon="icons:help-outline" on-click="_onObselTypeColumnHelp"></iron-icon>
+      </p>
+        <select id="typeSelect" style="width:100%; height:20pt" on-change="_typeSelectChanged">
+          <option value="-1">
+            <span>Create-a-generic-type</span>
+          </option>
+          <template is="dom-repeat" items="{{csvSchema.columns}}">
+            <option value="{{index}}">
+              <span>{{item.name}}</span>
+            </option>
+          </template>
+  </select>
+
+  <iron-collapse id="samplePane">
+    <div class="swag-scroll" style="display:block;height:200px;width:100%;overflow-y:auto;padding:20px;">
+      <table>
+        <template is="dom-repeat" items="{{_selectedColumnSample}}">
+                <tr>
+                  <td> <span>{{item}}</span> </td>
+                </tr>
+              </template>
+      </table>
+    </div>
+  </iron-collapse>
+
+  <paper-button on-click="_useType" raised noink>Use this column</paper-button>
+
+  </div>
+
+  <br/>
+
+
+  <div class="fit-width flex-horizontal" style="box-sizing:border-box">
+
+    <div class="flex-vertical">
+      <div id="type-title" class="swag-scroll" style="width: 200px; padding: 6px; height: 40px; border-bottom: solid 10px #666">
+        _types_
+      </div>
+      <div id="typesPanel" class="flex-vertical swag-scroll" style="overflow-y:auto; max-height: 500px; max-width: 200px; overflow-x:hidden; box-sizing: border-box">
+        <template is="dom-repeat" items="{{_typesObjects}}">
+          <div class="typesRow" style="display:block; width: 100%; min-height: 120px; max-height: 120px; border-bottom: solid 1px grey;">
+            <paper-input value="{{item.name}}" noLabelFloat on-change="_checkValueValidity"></paper-input>
+            <paper-checkbox on-click="_typeEnabledClicked" checked noink="{{_isTypeEnabled(item)}}">Enabled</paper-checkbox>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div class="flex-vertical fit-width" style="padding-right:200px;">
+      <div id="attributesTitle" class="flex-horizontal fit-width swag-scroll" style="height: 40px; overflow-x:auto; overflow-y:hidden; box-sizing: border-box">
+        <template is="dom-repeat" items="{{csvSchema.columns}}">
+            <div style="min-width:300px; max-wdith: 300px; padding: 5px;">
+              <paper-checkbox checked on-click="_changeAllAttributeStatus" noink>[[item.name]]</paper-checkbox>
+            </div>
+        </template>
+      </div>
+
+      <div id="attributesPanel" class="fit-width flex-vertical" style="max-height: 500px; overflow: hidden">
+        <template is="dom-repeat" items="{{_typesObjects}}">
+          <div class="flex-horizontal fit-width attributesRow" style="max-height: 120px; min-height: 120px; overflow: hidden">
+            <template is="dom-repeat" items="{{item.attributes}}">
+              <div style="min-width:300px; max-width: 300px; height: 120px; padding-top: 10px; border-right: solid 1px grey; border-bottom: solid 1px grey;box-sizing: border-box">
+                <taaabs-ctkm-sticker language={{language}} attribute={{item}}></taaabs-ctkm-sticker>
+              </div>
+            </template>
+      </div>
+      </template>
+    </div>
+  </div>
+  </div>
+  <!-- Notify toast -->
+  <paper-toast id="__notify_toast__" style="background-color:rgba(0,0,0,0.37)" duration=0> </paper-toast>
+
+  </template>
+  <script>
+    /* global Polymer */
+
+    Polymer({
+
+      is: 'taaabs-ctkm-model-edit',
+
+      properties: {
+
+        /**
+         * List of the samples of the selected column.
+         *
+         * @attribute _selectedColumnSample
+         * @type Array
+         */
+        _selectedColumnSample: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+
+        /**
+         * The list of types objects (obsel type + attributes).
+         *
+         * @attribute _typesObjects
+         * @type Array
+         */
+        _typesObjects: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+
+        //////////////////
+        // PARSING VARS //
+        //////////////////
+
+        /**
+         * Last line of the parsed file.
+         *
+         * @attribute _remains
+         * @type String
+         */
+        _remains: {
+          type: String,
+          notify: true,
+          value: ""
+        },
+
+        /**
+         * Index of the currently parsed slice.
+         *
+         * @attribute _sliceIndex
+         * @type Number
+         */
+        _sliceIndex: {
+          type: Number,
+          notify: true,
+          value: 1
+        },
+
+        /**
+         * Number of slices of a file.
+         *
+         * @attribute _slicesCount
+         * @type Number
+         */
+        _slicesCount: {
+          type: Number,
+          notify: true,
+          value: -1
+        },
+
+        /**
+         * Index of the currently parsed file.
+         *
+         * @attribute _fileIndex
+         * @type Number
+         */
+        _fileIndex: {
+          type: Number,
+          notify: true,
+          value: -1
+        },
+
+        _continueParsing: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        columnForType: {
+          type: Number,
+          notify: true,
+          value: -1
+        },
+
+        _parsingToastId: {
+          type: Number,
+          notify: true
+        },
+
+        /**
+         * Localization.
+         * fr, en.
+         *
+         * @attribute language
+         * @type String
+         */
+        language: {
+          type: String,
+          notify: true,
+        }
+      },
+
+      behaviors: [
+        Polymer.AppLocalizeBehavior,
+        NotifyToastBehavior
+      ],
+
+      ready: function() {
+        // Load i18n json.
+        this.loadResources(this.resolveUrl('./languages/locales_tcme.json'));
+        // Link the scroll status between the different panes.
+        this.$.typesPanel.addEventListener('scroll', function(e) {
+          this.$.attributesPanel.scrollTop = this.$.typesPanel.scrollTop;
+        }.bind(this));
+        this.$.attributesTitle.addEventListener('scroll', function(e) {
+          var rows = Polymer.dom(this.root).querySelectorAll('.attributesRow');
+          for (var i = 0; i < rows.length; i++) {
+            rows[i].scrollLeft = this.$.attributesTitle.scrollLeft;
+          }
+        }.bind(this));
+      },
+
+      //////////////////////
+      // PROCES FUNCTIONS //
+      //////////////////////
+
+      /**
+       * Triggered when the value of `typeSelect` changes.
+       * Set `columnForType` and calls `updateSample`.
+       *
+       * @method _typeSelectChanged
+       */
+      _typeSelectChanged: function() {
+        var index = this.$.typeSelect.selectedIndex;
+        if (index !== -1) {
+          this.selectedColumn4Type = this.csvSchema.columns[parseInt(this.$.typeSelect.options[index].value)];
+          this.set('columnForType', parseInt(this.$.typeSelect.options[index].value));
+          this._updateSample();
+        }
+      },
+
+      /**
+       * Bound function to input `checked` status.
+       * Return `item`.enabled
+       *
+       * @method _isTypeEnabled
+       */
+      _isTypeEnabled: function(item) {
+        return item.enabled;
+      },
+
+      /**
+       * Enable/Disable a specific attribute from all the types.
+       *
+       * @method _changeAllAttributeStatus
+       */
+      _changeAllAttributeStatus: function(e) {
+        for (var i = 0; i < this._typesObjects.length; i++) {
+          this.set('_typesObjects.' + i + '.attributes.' + e.model.index + '.enabled', e.target.checked);
+        }
+      },
+
+      /**
+       * Triggered when the user clicks on the submit button.
+       * Fires the `MODEL_SET` event.
+       *
+       * @method _changeAllAttributeStatus
+       */
+      _submit: function() {
+        this.fire('model-set', {
+          typesObjects: this._typesObjects,
+          typeColumn: this.columnForType
+        });
+      },
+
+      _typeEnabledClicked: function(e) {
+        e.model.item.enabled = e.target.checked;
+      },
+
+      /**
+       * Update the sample lines to display.
+       *
+       * @method _updateSample
+       */
+      _updateSample: function() {
+
+        // if the parsedSample as correctly been set.
+        if (this.parsedSample !== undefined) {
+          this.set('_selectedColumnSample',  []);
+          // Push the samples in _selectedColumnSample.
+          for (var i = 1; i < this.parsedSample.length - 1; i++) {
+            this.push('_selectedColumnSample', this.parsedSample[i][this.columnForType]);
+          }
+        } else {
+          this.fileReader.getSampleCsv(0, this.csvSchema.separator).then(function(sample) {
+            this.set('parsedSample', sample);
+            this._updateSample();
+          }.bind(this)).catch(function(err) {
+            console.log(err);
+          })
+        }
+      },
+
+      /**
+       * Triggered when "use this column" button is clicked.
+       *
+       * @method _useType
+       */
+      _useType: function() {
+
+        if (this.columnForType !== -1) {
+
+          var toast_id = this.notifyToast('Parsing files...<paper-spinner active></paper-spinner>', {
+            type: 'Log',
+            timeout: -1
+          });
+
+          this.set('_parsingToastId', toast_id);
+
+          this.set('types', []);
+
+          this.set('_fileIndex', -1);
+          this.set('_sliceIndex', 1);
+
+          this._getTypesFromFile();
+
+        } else {
+          this.set('_typesObjects', []);
+
+          var attributes = [];
+          for (var j = 0; j < this.csvSchema.columns.length; j++) {
+            attributes.push({
+              name: this.csvSchema.columns[j].name,
+              datatype: this.csvSchema.columns[j].dataType,
+              enabled: true
+            })
+          }
+
+          this.push('_typesObjects', {
+            title: null,
+            name: 'default_type',
+            enabled: true,
+            attributes: attributes
+          });
+        }
+      },
+
+      /**
+       * Init the type from each files.
+       *
+       * @method _getTypesFromFile
+       *
+       * @parameter {!required} a An event fired from polymer.fire.
+       * Must contain the object `detail.fileIndex`, with fileIndex the index of the file
+       * in `files`.
+       */
+      _getTypesFromFile: function() {
+
+        if (this._fileIndex < this.fileReader.files.length - 1) {
+          this.set('_fileIndex', this._fileIndex + 1);
+          this._getAllTypes();
+        } else {
+          this._obselsChanged();
+        }
+      },
+
+      /**
+       * Get all the different values of the type column from one file.
+       *
+       * @method _getAllTypes
+       *
+       * @parameter {!required} a An event fired from polymer.fire.
+       * Must contain the object `detail.fileIndex`, with fileIndex the index of the file
+       * in `files`.
+       */
+      _getAllTypes: function(fileIndex) {
+
+        this.fileReader.setCsvUtils({
+          file_index: this._fileIndex,
+          separator: this.csvSchema.separator,
+          current_slice: 1,
+          last_line: [],
+          columns_count: this.csvSchema.columns.length
+        });
+        var slices = this.fileReader.getSlices(this._fileIndex);
+        var count = 0;
+        var fr = this.fileReader;
+        var that = this;
+
+        function parse() {
+          fr.getSliceCsv().then(function(data) {
+            for (var i = 0; i < data.length - 1; i++) {
+              if (that.csvSchema.columnHeader && that._sliceIndex === 1 && i === 0) {
+                // Let's just ignore the first line.
+              } else {
+                var typeExists = false;
+                for (var j = 0; j < that.types.length; j++) {
+                  if (that.types[j] === data[i][that.columnForType]) {
+                    typeExists = true;
+                  }
+                }
+                if (!typeExists) {
+                  if (that.types.length > 100 && !that._continueParsing) {
+                    if (window.confirm("There currently are more than 100 types. It seems the chosen column is inappropriate. Do you want to stop parsing?")) {
+                      i = data.length;
+                      that._sliceIndex = that._sliceCount + 1;
+                      that._fileIndex = that.fileReader.files.length;
+                    } else {
+                      that.set('_continueParsing', true);
+                      that.push('types', data[i][that.columnForType]);
+                    }
+                  } else {
+                    that.push('types', data[i][that.columnForType]);
+                  }
+                }
+              }
+            }
+            count++;
+            if (count < slices)
+              parse();
+            else
+              that._getTypesFromFile();
+          }).catch(function(err) {
+            console.log(err);
+          });
+        }
+        parse();
+      },
+
+      _obselsChanged: function() {
+
+        this.set('_typesObjects', []);
+
+        for (var i = 0; i < this.types.length; i++) {
+
+          var attributes = [];
+          for (var j = 0; j < this.csvSchema.columns.length; j++) {
+            attributes.push({
+              name: this.csvSchema.columns[j].name,
+              datatype: this.csvSchema.columns[j].dataType,
+              enabled: true
+            })
+          }
+
+          this.push('_typesObjects', {
+            title: this.types[i],
+            name: this.types[i],
+            enabled: true,
+            attributes: attributes
+          })
+        }
+
+        this.closeToast(this._parsingToastId);
+      },
+
+      _onToggleSamplePanelClick: function() {
+        this.$.samplePane.toggle();
+      },
+
+      _checkValueValidity: function(evt) {
+        var value = evt.target.value;
+        var elem = evt.target;
+        var forbidenChars = [' ', '\\', '#'];
+        var invalid = false;
+        for (var i = 0; i < forbidenChars.length; i++) {
+          if (value.indexOf(forbidenChars[i]) !== -1) {
+            invalid = true;
+            this.notifyToast('The values must not contain a space ( ), an anti-slash(\\) or a hash (#).', {
+              type: 'Error',
+              timeout: -1
+            });
+          }
+        }
+        elem.set('invalid', invalid);
+      },
+
+      _onObselTypeColumnHelp: function() {
+        this.notifyToast(this.localize('otc-help'), {
+          type: 'Log',
+          timeout: -1
+        });
+      }
+
+    });
+  </script>
+
+</dom-module>

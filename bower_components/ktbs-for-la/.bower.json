@@ -1,0 +1,57 @@
+{
+  "name": "ktbs-for-la",
+  "description": "A web app using some `taaabs` components. It helps learning analysts work with a ktbs. See http://tbs-platform.org/tbs/doku.php/tools:ktbs",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs",
+    "Learning Analysis",
+    "ktbs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/ktbs-for-la.git"
+  },
+  "main": "ktbs-for-la.html",
+  "license": "https://github.com/TaaabsElements/ktbs-for-la/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "iron-pages": "PolymerElements/iron-pages#<2.*",
+    "iron-icon": "PolymerElements/iron-icon#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*",
+    "app-layout": "PolymerElements/app-layout#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "app-route": "PolymerElements/app-route#<2.*",
+    "paper-dialog": "PolymerElements/paper-dialog#<2.*",
+    "taaabs-taaabs": "TaaabsElements/taaabs-taaabs",
+    "taaabs-resource-loader": "TaaabsElements/taaabs-resource-loader",
+    "taaabs-base-overview": "TaaabsElements/taaabs-base-overview",
+    "taaabs-base-details": "TaaabsElements/taaabs-base-details",
+    "taaabs-base-graph": "TaaabsElements/taaabs-base-graph",
+    "taaabs-method-details": "TaaabsElements/taaabs-method-details",
+    "taaabs-themes": "TaaabsElements/taaabs-themes",
+    "taaabs-trace-timeline-docker": "TaaabsElements/taaabs-trace-timeline-docker",
+    "taaabs-csv-collector": "TaaabsElements/taaabs-csv-collector",
+    "taaabs-research": "TaaabsElements/taaabs-research",
+    "taaabs-trace-details-container": "TaaabsElements/taaabs-trace-details-container",
+    "i18n-panel": "Yepikae/i18n-panel"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/ktbs-for-la",
+  "_release": "371b8c154e",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "371b8c154e05c065e6472e505bd737dbafb9e5a6"
+  },
+  "_source": "https://github.com/TaaabsElements/ktbs-for-la.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/ktbs-for-la"
+}

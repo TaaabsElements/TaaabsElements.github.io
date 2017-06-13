@@ -1,0 +1,178 @@
+<link rel="import" href="../../paper-styles/paper-styles.html">
+<!-- taaabs-dark-theme.html -->
+<dom-module id="ktbs-for-la-style">
+  <template>
+    <style is="custom-style">
+      :host {
+        display: block;
+        overflow: hidden;
+        padding: 0px;
+      }
+
+      :host app-header {
+        background-color: var(--paper-blue-grey-900);
+        height: 40px;
+      }
+
+      :host #homeBtn {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        height: 30px;
+        color: white;
+      }
+
+      :host #drawerBtn {
+        position: absolute;
+        right: 10px;
+        top: 5px;
+        height: 30px;
+        color: white;
+      }
+
+      :host #href-progress-div{
+      }
+
+      :host #href-progress-bar{
+        transition: width ease-in-out 0.5s;
+      }
+
+      /* ///// */
+      /* PAGES */
+      /* ///// */
+
+      :host .page {
+        min-height: calc(100vh - 40px);
+        height: calc(100vh - 40px);
+        max-height: calc(100vh - 40px);
+      }
+
+      :host .centered {
+        width: 1000px;
+        margin: 0 auto;
+      }
+
+      /* //// */
+      /* HOME */
+      /* //// */
+
+      :host #banner {
+        background-image: url('../images/banner.png');
+        min-height: 40vh;
+        height: 60vh;
+        max-height: 60vh;
+      }
+
+      :host #base-list {
+        overflow-y: auto;
+        padding-left: 10px;
+      }
+
+      :host #banner a:link,
+      a:visited,
+      a:hover,
+      a:active {
+        color: inherit;
+        text-decoration: inherit;
+        outline: 0;
+      }
+
+      :host #banner h2 {
+        width: 200px;
+        height: 40px;
+        color: white;
+        border-top: solid 3px white;
+        border-bottom: solid 3px white;
+        padding-top: 10px;
+        opacity: 0.87;
+      }
+
+      :host #banner p {
+        color: rgba(255, 255, 255, 0.87);
+        padding-top: 10px;
+      }
+
+      :host #page-target{
+        display: none;
+      }
+
+      /* ////// */
+      /* DRAWER */
+      /* ////// */
+
+      app-drawer {
+        --app-drawer-content-container: {
+          background-color: var(--paper-blue-grey-900);
+          text-align: left;
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+      }
+
+      :host .menuHeader {
+        text-align: center;
+        border-bottom: solid 2px white;
+        margin-bottom: 10px;
+      }
+
+      :host .menuDiv{
+        margin-bottom: 1em;
+        border-bottom: solid 1px var(--paper-blue-grey-900);
+      }
+
+      :host .menuDiv:hover{
+        border-bottom: solid 1px var(--paper-grey-50);
+      }
+
+      :host .menuDiv> a:link,
+      a:visited,
+      a:hover,
+      a:active {
+        color: inherit;
+        text-decoration: inherit;
+        outline: 0;
+      }
+
+
+      /* //////////// */
+      /* BASE-DETAILS */
+      /* //////////// */
+
+      :host #base-details-icons{
+        padding: 5px;
+      }
+
+
+      /* //////// */
+      /* TOOL BOX */
+      /* //////// */
+
+      :host .toolBox {
+        width: 1000px;
+        margin: 0 auto;
+        display: table;
+        table-layout: fixed;
+        padding: 1em;
+      }
+
+      :host .toolLink {
+        display: table-cell;
+        cursor: pointer;
+        border-bottom: solid 1px transparent;
+      }
+
+      :host .toolLink:hover {
+        border-bottom: solid 1px white;
+      }
+
+      :host .toolLink> a:link,
+      a:visited,
+      a:hover,
+      a:active {
+        color: inherit;
+        text-decoration: inherit;
+        outline: 0;
+      }
+    </style>
+  </template>
+</dom-module>

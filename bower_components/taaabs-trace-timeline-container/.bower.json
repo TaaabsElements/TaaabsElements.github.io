@@ -1,0 +1,39 @@
+{
+  "name": "taaabs-trace-timeline-container",
+  "description": "A graphical elements that displays a timeline and its ruler for a kTBS trace.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-timeline-container.git"
+  },
+  "main": "taaabs-trace-timeline-container.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-timeline-container/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "taaabs-trace-timeline": "https://github.com/TaaabsElements/taaabs-trace-timeline.git",
+    "taaabs-trace-timeline-scroller": "https://github.com/TaaabsElements/taaabs-trace-timeline-scroller.git",
+    "paper-progress": "PolymerElements/paper-progress#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-trace-timeline-container",
+  "_release": "e77fa680bb",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "e77fa680bb2d9bac327ab52ba28e4efd7747439a"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-trace-timeline-container.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-trace-timeline-container"
+}

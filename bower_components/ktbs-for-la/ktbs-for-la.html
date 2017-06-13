@@ -1,0 +1,800 @@
+<!-- Css -->
+<link rel="import" href="./css/ktbs-for-la-style.html">
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<!-- App tools -->
+<link rel="import" href="../app-layout/app-layout.html">
+<link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../app-layout/app-scroll-effects/effects/waterfall.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<!-- i18n -->
+<link rel="import" href="../i18n-panel/i18n-panel.html">
+<!-- Iron elements -->
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<!-- Paper elements -->
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<!-- TAAABS Essential -->
+<link rel="import" href="../taaabs-taaabs/taaabs-taaabs.html">
+<link rel="import" href="../taaabs-research/taaabs-research.html">
+<!--
+# ktbs-for-la
+
+`<ktbs-for-la>` is a web app using some `taaabs` components. It helps learning analysts work with a ktbs.
+
+### Routes
+
+Routes are made of two parts: the `page` and the `resource uri`.
+ - List of existing pages
+  + /page/home
+  + /page/base-details
+  + /page/trace-details
+  + /page/trace-timeline
+  + /page/csv-collector
+  + /page/method-details
+ - List of resources uris
+  + `path/relative/uri/resource`
+  + `uri/http://some.absolute.resource/uri`
+
+A relative resource uri is relative to the `ktbsUrl` (see properties). Here's some route example:
+ - https://your.ktbs.url.com/#/page/base-details/path/baseTestRemi/
+ - https://your.ktbs.url.com/#/page/method-details/uri/http://liris.cnrs.fr/silex/2009/ktbs#filter
+
+
+### Example
+
+     <ktbs-for-la ktbs-url="https://your.ktbs.url.com/"></ktbs-for-la>
+
+Source files: <a href="https://github.com/TaaabsElements/ktbs-for-la" target="_blank">ktbs-for-la</a>
+
+### TODO LIST
+ - Put an interactive resource graph in resource search.
+ - Set the I18N in resource search dialog.
+-->
+<dom-module id="ktbs-for-la">
+  <!-- Remove the white spaces between html nodes -->
+  <template strip-whitespace>
+
+    <!-- CSS -->
+    <style include="taaabs-theme"></style>
+    <style include="ktbs-for-la-style"></style>
+
+    <!-- ROUTING COMPONENT -->
+    <app-location id="app-location" route="{{_route}}" use-hash-as-path></app-location>
+    <app-route route="[[_route]]" pattern="/page/:page"   data="{{_routePage}}"    tail="{{_tail}}">
+    <app-route route="[[_tail]]" pattern="/:resourceType" data="{{_resourceType}}" tail="{{_resourcePathTail}}">
+    </app-route>
+
+    <!-- RESEARCH DIALOG -->
+    <paper-dialog id="research-dialog">
+      <div class="flex-vertical">
+        <taaabs-research id="research" style="width: 1000px; min-height: 400px" ktbs-url="[[ktbsUrl]]" language="[[language]]"></taaabs-research>
+        <div class="flex-horizontal flex-equal-around-justified">
+          <paper-button class="fgWhite bgLog bgLogH hoverable" raised on-click="_onExploreHereClick">Explore here <iron-icon icon="icons:open-in-new"></iron-icon></paper-button>
+          <paper-button class="fgWhite bgLog bgLogH hoverable" raised on-click="_onExploreNewWindowClick">Explore in new window <iron-icon icon="icons:open-in-browser"></iron-icon></paper-button>
+        </div>
+      </div>
+    </paper-dialog>
+
+    <!-- CONTENT -->
+    <app-drawer-layout force-narrow>
+
+
+      <!-- MENU DRAWER -->
+      <app-drawer id="drawer" align="end">
+        <div class="fgWhite menuHeader">
+          <h3>MENU</h3>
+        </div>
+        <div class="fgWhite fgWhiteH clickable hoverable menuDiv">
+          <a href="#/base-overview">{{localize('projects')}}</a>
+        </div>
+        <div class="fgWhite fgWhiteH clickable hoverable menuDiv" on-click="_onSearchClick">
+          [[localize('search')]]
+          <iron-icon icon='icons:search' class="small" style="float:right; vertical-align:text-bottom"></iron-icon>
+        </div>
+        <div class="fgWhite fgWhiteH clickable hoverable menuDiv" on-click="_onImportCSVClicked">
+          [[localize('importcsv')]]
+          <iron-icon icon='icons:file-upload' class="small" style="float:right; vertical-align:text-bottom"></iron-icon>
+        </div>
+        <div class="fgWhite fgWhiteH clickable hoverable menuDiv">
+          [[localize('settings')]]
+          <iron-icon icon='icons:settings' class="tiny" style="float:right; vertical-align:text-bottom"></iron-icon>
+        </div>
+        <div class="fgWhite fgWhiteH clickable hoverable menuDiv">
+          <a href="/help/fr/index.html" target="_blank">[[localize('help')]]</a>
+          <iron-icon icon='icons:help-outline' class="tiny" style="float:right; vertical-align:text-bottom"></iron-icon>
+        </div>
+        <div>
+          <i18n-panel style="float:right" language="{{language}}"></i18n-panel>
+        </div>
+      </app-drawer>
+
+      <!-- HEADER TOOLBAR -->
+      <app-header fixed>
+        <app-toolbar >
+          <div id="homeBtn" class="fgWhite fgWhiteH clickable hoverable" on-click="_home">KTBS4LA</div>
+          <iron-icon id="drawerBtn" class="fgWhite fgWhiteH clickable hoverable" icon="icons:menu" on-click='_toggleDrawer'></iron-icon>
+        </app-toolbar>
+      </app-header>
+
+      <!-- HOME PAGE -->
+      <div id="home" class="page flex-vertical">
+        <div id="banner" class="flexchild flex-vertical flex-center-align">
+          <div class="flex-vertical flexchild  flex-equal-around-justified">
+            <div class="flex-horizontal flex-equal-around-justify fit-width">
+              <div>
+                <center><h2>KTBS 4 LA</h2></center>
+                <p>{{localize('welcome')}}</p>
+              </div>
+            </div>
+          </div>
+          <div id="href-progress-div" class="fit-width fgWhite">
+            [[_loadingElem]] <span style="float:right">[[_loadingCount]]%</span>
+            <div style="width: 100%; height: 10px; background-color: rgba(255,255,255,0.37)">
+              <div id="href-progress-bar" style="width: 0%; height: 10px; background-color: rgba(255,255,255,0.87)"></div>
+            </div>
+          </div>
+        </div>
+        <div id="base-list" class="centered swag-scroll">
+          <h3>[[localize('pickAProject')]]</h3>
+        </div>
+      </div>
+
+      <!-- REAL CONTENT -->
+      <div id="page-target" class="page"></div>
+
+    </app-drawer-layout>
+  </template>
+  <script>
+    (function() {
+      Polymer({
+        is: 'ktbs-for-la',
+        properties: {
+
+          /** ============================================================== **/
+          /**  PUBLIC PROPERTIES                                             **/
+
+          /**
+           * Url of the ktbs.
+           *
+           * @attribute ktbsUrl
+           * @type String
+           */
+          ktbsUrl: {
+            type: String
+          },
+
+          /**
+           * Localization.
+           * fr, en.
+           *
+           * @attribute language
+           * @type String
+           */
+          language: {
+            type: String,
+            notify: true,
+            value: 'fr'
+          },
+
+          /**
+           * List of all the dependencies to import when necessary.
+           *
+           * @attribute hrefResources
+           * @type Array
+           */
+          hrefResources: {
+            type: Array,
+            value: function(){
+              return [
+                "../taaabs-taaabs/taaabs-taaabs.html",
+                "../notify-toast-behavior/notify-toast-behavior.html",
+                "../taaabs-trace-timeline-docker/taaabs-trace-timeline-docker.html",
+                "../taaabs-method-details/taaabs-method-details.html",
+                "../taaabs-base-overview/taaabs-base-overview.html",
+                "./kfl-base-details.html",
+                "./kfl-trace-details.html",
+                "./kfl-csv-collector.html"
+              ];
+            }
+          },
+
+          /**
+           * Length of `hrefResources`.
+           *
+           * @attribute hrefResourcesLength
+           * @type Number
+           */
+          hrefResourcesLength: {
+            type: Number,
+            value: 8
+          },
+
+          /** ============================================================== **/
+          /**  PRIVATE PROPERTIES                                            **/
+
+          /**
+           * First part of the route.
+           * Represents the section we're displaying from the iron-page.
+           *
+           * @attribute _route
+           * @type Object
+           */
+          _route: {
+            type: Object,
+            notify: true,
+          },
+
+          /**
+           * The data of `_route`, according to the pattern '/:page'.
+           *
+           * @attribute _routePage
+           * @type Object
+           */
+          _routePage: {
+            type: Object,
+            notify: true,
+          },
+
+          /**
+           * The tail of the route.
+           *
+           * @attribute _tail
+           * @type Object
+           */
+          _tail: {
+            type: Object,
+            notify: true,
+          },
+
+          /**
+           * List of all the dependencies to import.
+           *
+           * @attribute _hrefBuffer
+           * @type Array
+           */
+          _hrefBuffer: {
+            type: Array,
+            value: []
+          }
+        },
+
+        observers: [
+          '_onRouteChanged(_route.path)',
+          '_onLanguageChanged(language)'
+        ],
+
+        behaviors: [
+          Polymer.AppLocalizeBehavior
+        ],
+
+        /** ================================================================ **/
+        /**  INITIALIZATION                                                  **/
+
+        /**
+         * .
+         *
+         * @method ready
+         */
+        ready: function(){},
+
+        /**
+         * .
+         *
+         * @method attached
+         */
+        attached: function() {
+          // Load i18n json.
+          this.loadResources(this.resolveUrl('./languages/locales.json'));
+        },
+
+        /** ================================================================ **/
+        /**  ROUTE / I18N                                                    **/
+
+        /**
+         * `#homeBtn` on-click function.
+         *
+         * @method _home
+         */
+        _home: function() {
+          this.set('_route.path', '/page/home/');
+        },
+
+        /**
+         * .
+         *
+         * @method _onRouteChanged
+         */
+        _onRouteChanged: function(route){
+          if(this._routePage === undefined){
+            setTimeout(function(){
+                this.set('_route.path', '/page/home/');
+                this._onRouteChanged();
+            }.bind(this), 100);
+          }
+          else{
+            var page = this._routePage.page;
+            switch(page){
+              case 'home':
+                this._loadHome();
+              break;
+              case 'base-details':
+                this._loadBaseDetails();
+              break;
+              case 'trace-details':
+                this._loadTraceDetails();
+              break;
+              case 'trace-timeline':
+                this._loadTraceTimeline();
+              break;
+              case 'csv-collector':
+                this._loadCsvCollector();
+              break;
+              case 'method-details':
+                this._loadMethodDetails();
+              break;
+            }
+          }
+        },
+
+        /**
+         * Returns an url from the route.
+         *
+         * @method _getResourceUrl
+         */
+        _getResourceUrl: function() {
+          // Get the type of path and the tail.
+          var type = this._resourceType.resourceType;
+          var path = this._resourcePathTail.path;
+          // Return either an absolute Url or the ktbs url + the resource relative url.
+          if     (type === 'url') return path.replace('/','');
+          else if(type === 'path'){
+            return this.ktbsUrl + path.replace('/', '');
+          }
+        },
+
+        /**
+         * .
+         *
+         * @method _onLanguageChanged
+         */
+        _onLanguageChanged: function(language){
+          var elem = this._getCurrentElement();
+          if(elem) elem.set('language', language);
+        },
+
+        /** ================================================================ **/
+        /**  DOM MANAGING                                                    **/
+
+        /**
+         * `#drawerBtn` on-click function.
+         *
+         * @method _toggleDrawer
+         */
+        _toggleDrawer: function() {
+          this.$.drawer.toggle();
+        },
+
+        /**
+         * "Import csv" button on-click function.
+         *
+         * @method _onImportCSVClicked
+         */
+        _onImportCSVClicked: function() {
+          var tail = this._tail.path;
+          this.set('_route.path', '/page/csv-collector' + tail);
+        },
+
+        /**
+         * .
+         *
+         * @method _getCurrentElement
+         */
+        _getCurrentElement: function(){
+          return (this.$['page-target'].children.length > 0) ? this.$['page-target'].children[0] : null;
+        },
+
+        /**
+         * .
+         *
+         * @method _showhome
+         */
+        _showHome: function(){
+          this.$.home.style.display = 'flex';
+          this.$['page-target'].style.display = 'none';
+        },
+
+        /**
+         * .
+         *
+         * @method _hideHome
+         */
+        _hideHome: function(){
+          this.$.home.style.display = 'none';
+          this.$['page-target'].style.display = 'flex';
+        },
+
+        /** ================================================================ **/
+        /**  IMPORT RESOURCES                                                **/
+
+        /**
+         * .
+         *
+         * @method _isHrefLoaded
+         */
+        _isHrefLoaded: function(list){
+          var l = [];
+          var i = 0;
+          var j = 0;
+          var m = this.hrefResources.length;
+          while(i < m){
+            j = 0;
+            while(j < list.length){
+              if(list[j] === this.hrefResources[i]){
+                l.push(this.hrefResources[i]);
+                this.splice('hrefResources', i , 1);
+                m--;
+                i--;
+                j = list.length;
+              }
+              j++;
+            }
+            i++;
+          }
+          if(l.length > 0){
+            this.set('_hrefBuffer', l);
+            return false;
+          }
+          return true;
+        },
+
+        /**
+         * .
+         *
+         * @method importResources
+         */
+        importResources: function(callback, resources){
+          resources = resources || this.get('hrefResources');
+          if(this._hrefBuffer.length > 0){
+            var endOfLoading = (this._hrefBuffer.length === 1);
+            var res = this.pop('_hrefBuffer');
+            this.set('_loadingElem', res);
+            this.importHref(this.resolveUrl(res),
+             function(evt){
+              var count = Math.floor( (this.hrefResourcesLength - this._hrefBuffer.length) / this.hrefResourcesLength * 100);
+              this.$['href-progress-bar'].style.width = count+'%';
+              this.set('_loadingCount', count);
+              if(endOfLoading){
+                this.set('_loadingElem', "Loading complete");
+                callback();
+              }
+              else this.importResources(callback);
+            }.bind(this),
+             function(evt){
+               console.log('error');
+               console.log(evt);
+             }, true);
+          }
+          else if(resources.length === 0){
+            callback();
+          }
+          else{
+            this._isHrefLoaded(resources);
+            this.importResources(callback);
+          }
+        },
+
+        /** ================================================================ **/
+        /**   HOME                                                           **/
+
+        /**
+         * .
+         *
+         * @method _loadHome
+         */
+        _loadHome: function(){
+          this._showHome();
+          function callback(){
+            // Create the `taaabs-base-overwview` element and launch it.
+            var bl = document.createElement('taaabs-base-overview');
+            bl.set('ktbsUrl', this.ktbsUrl);
+            bl.set('language', this.language);
+            bl.style.padding = 0;
+            bl.style.paddingBottom = '24px';
+            if(this.$['base-list'].children.length > 1) this.$['base-list'].removeChild( this.$['base-list'].children[1]);
+            this.$['base-list'].appendChild(bl);
+            bl.refresh();
+            // listen to `base-selected`.
+            bl.addEventListener('base-selected', function(e) {
+              if (e.detail.where === "here") {
+                this.set('_route.path', '/page/base-details/path/' + e.detail.baseId);
+              } else {
+                window.open('#/page/base-details/path/' + e.detail.baseId);
+              }
+            }.bind(this));
+          }
+          this.importResources(callback.bind(this));
+        },
+
+        /** ================================================================ **/
+        /**  BASE DETAILS                                                    **/
+
+        /**
+         * .
+         *
+         * @method _loadBaseDetails
+         */
+        _loadBaseDetails: function(){
+          if( this.hrefResources.indexOf('./kfl-base-details.html') === -1){
+            this._hideHome();
+            if(this.$['page-target'].children.length > 0) this.$['page-target'].removeChild(this.$['page-target'].children[0]);
+
+            var baseUrl = this._getResourceUrl();
+            var bd = document.createElement('kfl-base-details');
+            bd.classList.add('fit-width');
+            bd.set('baseUrl', baseUrl);
+
+            // Set the listeners
+            bd.addEventListener('resource-selected'     , this._baseDetailsResourceSelected.bind(this));
+            bd.addEventListener('base-creation-canceled', this._baseDetailsBaseCreationCanceled.bind(bd));
+            bd.addEventListener('base-created'          , this._baseDetailsBaseCreated.bind(bd));
+            bd.addEventListener('resource-changed'      , this._baseDetailsResourceChanged.bind(bd));
+            this.$['page-target'].appendChild(bd);
+            bd.refresh();
+          }
+          else{
+            this.importResources(this._loadBaseDetails.bind(this), ['./kfl-base-details.html']);
+          }
+        },
+
+        /**
+         * .
+         *
+         * @method _baseDetailsResourceSelected
+         */
+        _baseDetailsResourceSelected: function(e){
+          // Get the path to the base
+          var source_url = e.detail.resource.uri;
+          var page = "/page/";
+          var prefix = "url/";
+          if(source_url.search(this.ktbsUrl) !== -1){
+            source_url = source_url.replace(this.ktbsUrl, '');
+            prefix = "path/";
+          }
+
+          var url = prefix + source_url;
+          if (e.detail.resource['@type'] === "StoredTrace" || e.detail.resource['@type'] === "ComputedTrace") {
+            page += 'trace-details/';
+          } else if (e.detail.resource['@type'] === "Base") {
+            page += 'base-details/';
+          } else if (e.detail.resource['@type'] === "Method") {
+            page += 'method-details/';
+          }
+          if (e.detail.where === 'here') {
+            this.set('_route.path', page + url);
+          } else {
+            window.open('#' + page + url);
+          }
+        },
+
+        /**
+         * TODO Create func inside bd.
+         *
+         * @method _baseDetailsBaseCreationCanceled
+         */
+        _baseDetailsBaseCreationCanceled: function(){
+          this.$['base-create-modal'].close();
+        },
+
+        /**
+         * TODO Create func inside bd.
+         *
+         * @method _baseDetailsBaseCreated
+         */
+        _baseDetailsBaseCreated: function(){
+          this.$['base-create-modal'].close();
+          this.refresh();
+        },
+
+        /**
+         *
+         *
+         * @method _baseDetailsResourceChanged
+         */
+        _baseDetailsResourceChanged: function(){
+          this.refresh();
+        },
+
+        /** ================================================================ **/
+        /**  TRACE DETAILS                                                   **/
+
+        /**
+         * .
+         *
+         * @method _loadTraceDetails
+         */
+        _loadTraceDetails: function() {
+          if( this.hrefResources.indexOf('./kfl-trace-details.html') === -1){
+            this._hideHome();
+            if(this.$['page-target'].children.length > 0){
+              console.log('on nettoie');
+              var elem = this.$['page-target'].children[0];
+              elem.clear();
+              Polymer.dom(this.$['page-target']).removeChild(elem);
+              Polymer.dom.flush();
+            }
+
+            var traceUrl = this._getResourceUrl();
+
+            var td = document.createElement('kfl-trace-details');
+            td.classList.add('fit-width');
+            td.set('traceUrl', traceUrl);
+            td.addEventListener('timeline-link-clicked', function(){
+              window.open('#/page/trace-timeline/path' + this._resourcePathTail.path);
+            }.bind(this))
+            this.$['page-target'].appendChild(td);
+            td.refresh();
+          }
+          else{
+            this.importResources(this._loadTraceDetails.bind(this), ['./kfl-trace-details.html']);
+          }
+        },
+
+        /** ================================================================ **/
+        /**  TRACE TIMELINE                                                  **/
+
+        /**
+         * .
+         *
+         * @method _loadTraceTimeline
+         */
+        _loadTraceTimeline: function(){
+          if( this.hrefResources.indexOf('../taaabs-trace-timeline-docker/taaabs-trace-timeline-docker.html') === -1){
+            this._hideHome();
+            if(this.$['page-target'].children.length > 0) this.$['page-target'].removeChild(this.$['page-target'].children[0]);
+
+            var traceUrl = this._getResourceUrl();
+
+            var tt = new TAAABS.TraceTimelineDocker();
+            tt.classList.add('fit-width');
+            tt.set('traceUrl', traceUrl);
+            Polymer.dom(this.$['page-target']).appendChild(tt);
+            tt.refresh();
+          }
+          else{
+            this.importResources(this._loadTraceTimeline.bind(this), ['../taaabs-trace-timeline-docker/taaabs-trace-timeline-docker.html', '../taaabs-taaabs/taaabs-taaabs.html']);
+          }
+        },
+
+        /** ================================================================ **/
+        /**  CSV COLLECTOR                                                   **/
+
+        /**
+         * .
+         *
+         * @method _loadCsvCollector
+         */
+        _loadCsvCollector: function(){
+          if( this.hrefResources.indexOf('./kfl-csv-collector.html') === -1){
+            this._hideHome();
+            if(this.$['page-target'].children.length > 0) this.$['page-target'].removeChild(this.$['page-target'].children[0]);
+
+            var baseUrl = this._getResourceUrl();
+
+            var cc = document.createElement('kfl-csv-collector');
+            cc.classList.add('fit-width');
+            cc.set('baseUrl', baseUrl);
+            Polymer.dom(this.$['page-target']).appendChild(cc);
+            cc.refresh();
+          }
+          else{
+            this.importResources(this._loadCsvCollector.bind(this), ['./kfl-csv-collector.html']);
+          }
+        },
+
+        /** ================================================================ **/
+        /**  METHOD DETAILS                                                  **/
+
+        /**
+         * .
+         *
+         * @method _loadMethodDetails
+         */
+        _loadMethodDetails: function(){
+          if( this.hrefResources.indexOf('../taaabs-method-details/taaabs-method-details.html') === -1){
+            this._hideHome();
+            if(this.$['page-target'].children.length > 0) this.$['page-target'].removeChild(this.$['page-target'].children[0]);
+
+            var methodUrl = this._getResourceUrl();
+
+            var md = new TAAABS.MethodDetails();
+            md.classList.add('fit-width', 'swag-scroll');
+            md.set('methodUrl', methodUrl);
+            md.set('ktbsUrl', this.ktbsUrl);
+            Polymer.dom(this.$['page-target']).appendChild(md);
+            md.refresh();
+          }
+          else{
+            this.importResources(this._loadMethodDetails.bind(this), ['../taaabs-method-details/taaabs-method-details.html']);
+          }
+
+        },
+
+        /** ================================================================ **/
+        /**  SEARCH                                                          **/
+
+        /**
+         * .
+         *
+         * @method _onSearchClick
+         */
+        _onSearchClick: function(){
+          this.$['research-dialog'].open();
+        },
+
+        /**
+         * .
+         *
+         * @method _onExploreHereClick
+         */
+        _onExploreHereClick: function(){
+          var url = this.$.research.get('resourceUrl');
+          url.replace(this.ktbsUrl, '');
+          var type = this.$.research.get('resource')['@type'];
+          var path = "/page/";
+          if(type === "Base"){
+            path += 'base-details/path/'+url;
+          }
+          else if(type === "TraceModel"){
+            // TODO Compelte with model page
+            return;
+          }
+          else if(type === "StoredTrace" || type === "ComputedTrace"){
+            path += 'trace-details/path/'+url;
+          }
+          else if(type=== "Method"){
+            path += 'method-details/path/'+url;
+          }
+          else{
+            return;
+          }
+          this.set('_route.path', path);
+          this.$['research-dialog'].close();
+          this.$.drawer.toggle();
+        },
+
+        /**
+         * .
+         *
+         * @method _onExploreNewWindowClick
+         */
+        _onExploreNewWindowClick: function(){
+          var url = this.$.research.get('resourceUrl');
+          url.replace(this.ktbsUrl, '');
+          var type = this.$.research.get('resource')['@type'];
+          var path = "/page/";
+          if(type === "Base"){
+            path += 'base-details/path/'+url;
+          }
+          else if(type === "TraceModel"){
+            // TODO Compelte with model page
+            return;
+          }
+          else if(type === "StoredTrace" || type === "ComputedTrace"){
+            path += 'trace-details/path/'+url;
+          }
+          else if(type=== "Method"){
+            path += 'method-details/path/'+url;
+          }
+          else{
+            return;
+          }
+          window.open('#'+path);
+        },
+
+      });
+    })();
+  </script>
+</dom-module>

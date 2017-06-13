@@ -1,0 +1,42 @@
+{
+  "name": "taaabs-trace-details",
+  "description": "Graphical element that displays the main stats of a ktbs trace.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-details.git"
+  },
+  "main": "taaabs-trace-details.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-details/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "iron-collapse": "PolymerElements/iron-collapse#<2.*",
+    "iron-icon": "PolymerElements/iron-icon#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*",
+    "google-chart": "GoogleWebComponents/google-chart#<2.*",
+    "taaabs-themes": "TaaabsElements/taaabs-themes",
+    "taaabs-time-utilities": "TaaabsElements/taaabs-time-utilities"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-trace-details",
+  "_release": "8e49f12b68",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "8e49f12b683effe71bcba2e209c0d6d53d1610b3"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-trace-details.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-trace-details"
+}

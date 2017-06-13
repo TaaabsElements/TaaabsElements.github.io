@@ -1,0 +1,32 @@
+{
+    "en": {
+      "title": "Create a new base",
+      "source-url": "Root name",
+      "validate": "Validate",
+      "cancel": "Cancel",
+      "base-id": "The new ktbs base id",
+      "base-label": "The new ktbs base label, a short description",
+      "base-comment": "The new ktbs base comment, a more precise description",
+      "loading-base": "Loading the ktbs base root...",
+      "id-already-exists": "The chosen id is already used in the ktbs root base.",
+      "invalid-symbol-part-1": "The symbol '",
+      "invalid-symbol-part-2": "' cannot be used in the ktbs base id.",
+      "submit-base-loading": "Creating the new ktbs base...",
+      "submit-error": "An error occured : "
+    },
+    "fr": {
+      "title": "Créer une nouvelle base",
+      "source-url": "Nom de la racine",
+      "validate": "Valider",
+      "cancel": "Annuler",
+      "base-id": "L' identifiant de la nouvelle base ktbs",
+      "base-label": "Le label de la nouvelle base ktbs, une courte description",
+      "base-comment": "Le commentaire de la nouvelle base ktbs, une description plus précise",
+      "loading-base": "Chargement de la base ktbs racine...",
+      "id-already-exists": "L'identifiant choisi est déjà utilisé dans la base ktbs racine.",
+      "invalid-symbol-part-1": "Le symbole '",
+      "invalid-symbol-part-2": "' ne peut pas faire partie d'une identifiant de base ktbs.",
+      "submit-base-loading": "Creation de la nouvelle base ktbs...",
+      "submit-error": "Une erreur s'est produite : "
+    }
+}

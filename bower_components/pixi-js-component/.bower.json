@@ -1,0 +1,37 @@
+{
+  "name": "pixi-js-component",
+  "description": "A wrapping of the pixi.js library. See http://www.pixijs.com/",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "pixijs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yepikae/pixi-js-component.git"
+  },
+  "main": "pixi-js-component.html",
+  "license": "https://github.com/Yepikae/pixi-js-component/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/Yepikae/pixi-js-component",
+  "_release": "4011fe4716",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "4011fe47163f139994c1884cca8918da49ae66a5"
+  },
+  "_source": "https://github.com/Yepikae/pixi-js-component.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/Yepikae/pixi-js-component.git"
+}

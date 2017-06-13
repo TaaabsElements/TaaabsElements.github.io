@@ -1,0 +1,382 @@
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+
+<!-- taaabs-dark-theme.html -->
+<dom-module id="taaabs-theme">
+  <template>
+    <style>
+      :host {
+        @apply(--paper-font-common-base);
+        font-size: 14px;
+        margin: :0;
+        padding: 24px;
+        box-sizing:border-box;
+        background-color: var(--paper-grey-50);
+        position: relative;
+      }
+
+      /**** div ****/
+
+      :host div{
+        box-sizing:border-box;
+      }
+
+      :host .no-select {
+        cursor: default;
+        -webkit-touch-callout: none; /* iOS Safari */
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /* Non-prefixed version, currently
+                                        supported by Chrome and Opera */
+      }
+
+      :host .fade {
+        opacity: 0.37;
+        -webkit-transition: opacity 0.25s ease-in-out;
+        -moz-transition: opacity 0.25s ease-in-out;
+        -o-transition: opacity 0.25s ease-in-out;
+        -ms-transition: opacity 0.25s ease-in-out;
+      }
+
+      :host .disable {
+        pointer-events: none;
+      }
+
+      :host tr.clickable, td.clickable, th.clickable{
+        -webkit-transition: background-color 0.25s ease-in-out;
+        transition: background-color 0.25s ease-in-out;
+      }
+
+      :host .clickable {
+        cursor: pointer;
+      }
+
+      :host tr.clickable:hover, td.clickable:hover, th.clickable:hover{
+        background-color: var(--paper-grey-200);
+      }
+
+      /* MARK: paper-dropdown-menu */
+
+      paper-dropdown-menu {
+        --paper-input-container-label: {
+          font-size: 14px;
+        };
+      }
+
+      paper-item {
+        --paper-item: {
+          font-size: 14px;
+          -webkit-transition: background-color 0.25s ease-in-out;
+          transition: background-color 0.25s ease-in-out;
+          cursor: pointer;
+        };
+      }
+
+      /* MARK: paper-input */
+
+      paper-input {
+        --paper-input-container-input: {
+          font-size: 14px;
+        };
+      }
+
+      /* MARK: paper-dialog */
+      paper-dialog {
+        background-color: var(--paper-grey-50);
+      }
+
+      :host iron-autogrow-textarea {
+        border: 0;
+        border-bottom: solid 1px grey;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+      }
+
+
+      /* MARK: Sizes */
+
+      :host .tiny {
+        font-size: 10px;
+      }
+
+      :host iron-icon.tiny {
+        width: 14px;
+        height: 14px;
+      }
+
+      :host .small {
+        font-size: 12px;
+      }
+
+      :host iron-icon.small {
+        width: 16px;
+        height: 16px;
+      }
+
+      :host .fit {
+        width: 100%;
+        height: 100%;
+      }
+
+      :host .fit-width {
+        width: 100%;
+      }
+
+      :host .fit-height {
+        height: 100%;
+      }
+
+      :host p{
+        text-align: justify;
+      }
+
+      /** ================================================================== **/
+      /**  LINKS                                                             **/
+
+      a {
+        transition: color ease-in-out 0.3s, border-color ease-in-out 0.3s;
+      }
+
+      /* unvisited link */
+      a:link {
+        color: #212121;
+        text-decoration: none;
+        border-bottom: dotted 1px #212121;
+      }
+
+      /* visited link */
+      a:visited {
+        color: #212121;
+        text-decoration: none;
+        border-bottom: dotted 1px #212121;
+      }
+
+      /* mouse over link */
+      a:hover {
+        color: #616161;
+        text-decoration: none;
+        border-bottom: dotted 1px #616161;
+      }
+
+      /* selected link */
+      a:active {
+        color: #616161;
+        text-decoration: none;
+        border-bottom: dotted 1px #616161;
+      }
+
+      /* MARK: tables */
+
+      :host table{
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      :host th {
+        border-bottom: solid 1px var(--paper-grey-500);
+        text-align: left;
+      }
+
+      :host th, td{
+        padding-top: 0.25em;
+        padding-bottom: 0.25em;
+      }
+
+      :host tr:nth-child(2n){
+        background-color: var(--paper-grey-100);
+      }
+
+      /* MARK: colors */
+
+      .hoverable {
+        -webkit-transition: color 0.25s ease-in-out, background-color 0.25s ease-in-out;
+        transition: color 0.25s ease-in-out, background-color 0.25s ease-in-out;
+      }
+
+      .fgWhite{
+        color: var(--paper-grey-100);
+      }
+
+      .fgWhiteH:hover{
+        color: #ffffff;
+      }
+
+      .fgGrey{
+        color: var(--paper-grey-500);
+      }
+
+      .fgGreyH:hover{
+        color: var(--paper-grey-400);
+      }
+
+      .fgBlack{
+        color: rgba(0,0,0,0.87);
+      }
+
+      .fgBlackH:hover{
+        color: rgba(0,0,0,0.57);
+      }
+
+      .bgLightGrey100{
+        background-color: var(--paper-grey-100);
+      }
+
+      .bgLightGrey100H:hover{
+        background-color: var(--paper-grey-200);
+      }
+
+      .bgDarkBlue{
+        background-color: var(--paper-blue-grey-900);
+      }
+
+      .bgDarkBlueH{
+        background-color: var(--paper-blue-grey-800);
+      }
+
+      .fgSuccess{
+        color: var(--paper-green-500);
+      }
+
+      .bgSuccess{
+        background-color: var(--paper-green-500);
+      }
+
+      .bgSuccessH:hover{
+        background-color: var(--paper-green-400);
+      }
+
+      .fgSuccessH:hover{
+        color: var(--paper-green-400);
+      }
+
+      .fgWarning{
+        color: var(--paper-orange-500);
+      }
+
+      .bgWarning{
+        background-color: var(--paper-orange-500);
+      }
+
+      .bgWarningH:hover{
+        background-color: var(--paper-orange-400);
+      }
+
+      .fgWarningH:hover{
+        color: var(--paper-orange-400);
+      }
+
+      .fgError{
+        color: var(--paper-red-500);
+      }
+
+      .bgError{
+        background-color: var(--paper-red-500);
+      }
+
+      .bgErrorH:hover{
+        background-color: var(--paper-red-400);
+      }
+
+      .fgErrorH:hover{
+        color: var(--paper-red-400);
+      }
+
+      .fgLog{
+        color: var(--paper-blue-500);
+      }
+
+      .fgLogH:hover{
+        color: var(--paper-blue-400);
+      }
+
+      .bgLog{
+        background-color: var(--paper-blue-500);
+      }
+
+      .bgLogH:hover{
+        background-color: var(--paper-blue-400);
+      }
+
+
+
+      /* MARK: iron-flex-layout classes */
+
+      :host .flexchild {
+        @apply(--layout-flex);
+      }
+
+      :host .flex-horizontal {
+        @apply(--layout-horizontal);
+      }
+
+      :host .flex-vertical {
+        @apply(--layout-vertical);
+      }
+
+      :host .flex-center-align {
+        @apply(--layout-center);
+      }
+
+      :host .flex-start-align {
+        @apply(--layout-start);
+      }
+
+      :host .flex-end-align {
+        @apply(--layout-end);
+      }
+
+      :host .flex-start-justified {
+        @apply(--layout-start-justified);
+      }
+
+      :host .flex-center-justified {
+        @apply(--layout-center-justified);
+      }
+
+      :host .flex-end-justified {
+        @apply(--layout-end-justified);
+      }
+
+      :host .flex-equal-justified {
+        @apply(--layout-justified);
+      }
+
+      :host .flex-equal-around-justified {
+        @apply(--layout-around-justified);
+      }
+
+      :host .flex-reversed {
+        @apply(--layout-horizontal-reverse);
+      }
+
+      :host .flex-wrap {
+        @apply(--layout-wrap);
+      }
+
+      :host .relative {
+        @apply(--layout-relative);
+      }
+
+      /* MARK: swag-scroll */
+
+      :host .swag-scroll{
+        overflow: auto;
+      }
+
+      :host .swag-scroll::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      :host .swag-scroll::-webkit-scrollbar-track {
+        background: #ddd;
+      }
+
+      :host .swag-scroll::-webkit-scrollbar-thumb {
+        background: #666;
+      }
+    </style>
+  </template>
+</dom-module>

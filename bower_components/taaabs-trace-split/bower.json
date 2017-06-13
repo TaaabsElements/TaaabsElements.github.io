@@ -1,0 +1,41 @@
+{
+  "name": "taaabs-trace-split",
+  "version": "1.0.0",
+  "description": "List of several elements that split a trace.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-split.git"
+  },
+  "main": "taaabs-trace-split-histogram.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-split/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "paper-button": "PolymerElements/paper-button#<2.*",
+    "paper-listbox": "PolymerElements/paper-listbox#<2.*",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#<2.*",
+    "paper-item": "PolymerElements/paper-item#<2.*",
+    "paper-input": "PolymerElements/paper-input#<2.*",
+    "paper-checkbox": "PolymerElements/paper-checkbox#<2.*",
+    "google-chart": "GoogleWebComponents/google-chart#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "taaabs-themes": "TaaabsElements/taaabs-themes",
+    "taaabs-time-utilities": "TaaabsElements/taaabs-time-utilities",
+    "taaabs-trace-histogram": "TaaabsElements/taaabs-trace-histogram",
+    "taaabs-compute-trace-split": "TaaabsElements/taaabs-compute-trace-split",
+    "notify-toast-behavior": "Yepikae/notify-toast-behavior",
+    "sortable-list": "Yepikae/sortable-list"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": []
+}

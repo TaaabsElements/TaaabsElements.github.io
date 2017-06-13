@@ -1,0 +1,777 @@
+<link rel="import" href="../taaabs-trace-timeline-scroller/taaabs-trace-timeline-scroller.html">
+<link rel="import" href="../taaabs-trace-timeline/taaabs-trace-timeline.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="../taaabs-taaabs/taaabs-taaabs.html">
+
+<!--
+`<taaabs-trace-timeline-container>` is a graphical elements that displays a timeline and its ruler for a kTBS trace.
+
+In typical use, just insert a `<taaabs-trace-timeline-container>`, and set the traceUrl.
+TODO: Retrieve the trace with only the traceUrl.
+-->
+<dom-module id="taaabs-trace-timeline-container">
+  <template>
+    <style include="taaabs-theme"></style>
+    <style is="custom-style">
+      :host {
+        display: flex;
+        width: 100%;
+        flex: 1;
+        padding: 0px;
+      }
+      #progress {
+        width: 100%;
+        height: 10px;
+        --paper-progress-active-color: var(--paper-blue-500);
+        --paper-progress-indeterminate-cycle-duration: 5s;
+      }
+      #background-progress {
+        width: 100%;
+        height: 10px;
+        --paper-progress-transition-timing-function: ease;
+        --paper-progress-transition-duration: 0.25s;
+        --paper-progress-active-color: var(--paper-blue-300);
+
+      }
+    </style>
+    <div class="flex-vertical flexchild">
+      <taaabs-trace-timeline class="flexchild" id="timeline"></taaabs-trace-timeline>
+      <taaabs-trace-timeline-scroller id="scroller" style="height: 65px;"></taaabs-trace-timeline-scroller>
+      <paper-progress id="progress" indeterminate disabled></paper-progress>
+      <paper-progress id="background-progress" min="0" max="100" value="0"></paper-progress>
+    </div>
+  </template>
+  <script>
+    TAAABS.TraceTimelineContainer = Polymer({
+      is: 'taaabs-trace-timeline-container',
+
+      properties: {
+
+        /** ================================================================ **/
+        /**                     PUBLIC PROPERTIES                            **/
+
+        /**
+         * The `taaabs-trace-timeline-stylesheet` component bound to this one.
+         * This helps updating the obsels count for each rule of the stylesheet.
+         *
+         * @attribute boundStylesheetComponent
+         * @type Object
+         */
+        boundStylesheetComponent: {
+          type: Object,
+          value: null
+        },
+
+        /**
+         * The trace.
+         *
+         * @attribute trace
+         * @type Object
+         */
+        trace: {
+          type: Object,
+          value: null
+        },
+
+        /**
+         * The trace URI.
+         *
+         * @attribute traceUrl
+         * @type String
+         */
+        traceUrl: {
+          type: String,
+          value: null
+        },
+
+        /**
+         * The trace stats.
+         *
+         * @attribute traceStats
+         * @type Object
+         */
+        traceStats: {
+          type: Object,
+          value: null
+        },
+
+        /** ================================================================ **/
+        /**                    PRIVATE PROPERTIES                            **/
+
+        /**
+         * Begin time of the current interval.
+         *
+         * @attribute _currentBegin
+         * @type Number
+         */
+        _currentBegin: {
+          type: Number,
+          value: 0
+        },
+
+        /**
+         * End time of the current interval.
+         *
+         * @attribute _currentEnd
+         * @type Number
+         */
+        _currentEnd: {
+          type: Number,
+          value: 0
+        },
+
+        /**
+         * True if the `taaabs-trace-timeline-container` is already listening what it has to.
+         * False otherwise.
+         *
+         * @attribute _isEventListened
+         * @type Boolean
+         */
+        _isEventListened: {
+         type: Boolean,
+         value: false
+        },
+
+        /**
+         * True if the first wave of download has been completed.
+         * False otherwise.
+         *
+         * @attribute _firstDownloadDone
+         * @type Boolean
+         */
+        _firstDownloadDone:{
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * List of download "columns".
+         *
+         * @attribute _downloadBuffer
+         * @type Array
+         */
+        _downloadBuffer: {
+          type: Array,
+          value: []
+        },
+
+        /**
+         * List of indexes of the _downloadBuffers that must be downloaded asap.
+         *
+         * @attribute _downloadPriority
+         * @type Array
+         */
+        _downloadPriority: {
+          type: Array,
+          value: []
+        },
+
+        /**
+         * Count of obsels downloaded.
+         *
+         * @attribute _obselsCount
+         * @type Number
+         */
+        _obselsCount: {
+          type: Number,
+          value: 0
+        },
+
+        /**
+         * Index of the _downloadBuffer being downloaded.
+         *
+         * @attribute _downloadCurrentBufferIndex
+         * @type Number
+         */
+        _downloadCurrentBufferIndex: {
+          type: Number,
+          value: -1
+        }
+      },
+
+      /** ================================================================== **/
+      /**                     CONSTRUCTORS / DESTRUCTORS                     **/
+
+      /**
+       * Default constructor. Calls `_emptyAllProperties`.
+       *
+       * @method factoryImpl
+       */
+      factoryImpl: function() {
+        this._emptyAllProperties();
+      },
+
+      /**
+       * If not set yet, set the listeners.
+       *
+       * @method attached
+       */
+      attached: function() {
+        if(!this._isEventListened){
+          this.$.scroller.addEventListener('timeline-scroller-new-bounds', this._onTimelineScrollerNewBounds.bind(this));
+          this.$.scroller.addEventListener('timeline-scroller-shift', this._onTimelineScrollerShift.bind(this));
+          this.$.timeline.addEventListener('timeline-interval-selected', this._onTimelineIntervalSelected.bind(this));
+          this.set('_isEventListened', true);
+        }
+      },
+
+      /**
+       * Calls `_emptyAllProperties`.
+       *
+       * @method ready
+       */
+      ready: function() {
+        this._emptyAllProperties();
+      },
+
+      /**
+       * Stop the downloads and calls `_emptyAllProperties`.
+       * Also calls `clear` on the timeline & the scroller.
+       *
+       * @method ready
+       */
+      clear: function(){
+        if(this._xhr) this._xhr.abort();
+        this._emptyAllProperties();
+        this.$.timeline.clear();
+        this.$.scroller.clear();
+      },
+
+      /**
+       * Set all the properties to their default value.
+       *
+       * @method _emptyAllProperties
+       */
+      _emptyAllProperties: function(){
+        this.set('_downloadBuffer', []);
+        this.set('_currentBegin', 0);
+        this.set('_currentEnd', 0);
+        this.set('_downloadCurrentBufferIndex', -1);
+        this.set('_firstDownloadDone', false);
+        this.set('_isEventListened', false);
+        this.set('_downloadPriority', []);
+        this.set('_obselsCount',0);
+        this.$['background-progress'].value = 0;
+      },
+
+      /** ================================================================== **/
+      /**                            INITIALIZATION                          **/
+
+      /**
+       * Reset the timeline and the scroller.
+       * Starts the passive download.
+       * Download works like this :
+       *    - The duration of the timeline is divided in as many column as there'll be displayed in the timeline.
+       *    - For each column, we download 30 obsels with no end time. This way, we can skip the empty columns.
+       *    - Once all the columns have been visited at elast once, we complete them.
+       *
+       * @method refresh
+       */
+      refresh: function(){
+        // Get the begin and end of the trace.
+        var b = this.traceStats['stats:minTime'];
+        var e = this.traceStats['stats:maxTime'];
+        this.set('_currentBegin', b);
+        this.set('_currentEnd',   e);
+        // Set the scroller vars.
+        this.$.scroller.init(b, e);
+        // Set the timeline vars
+        this.$.timeline.setTemporalBounds(b, e);
+        this.$.timeline.initVisu();
+        // While the timeline width isn't set, we wait.
+        // Then, we start the passiv download
+        var interval = setInterval(function(){
+          if(this.$.timeline._width !== 0){
+            clearInterval(interval);
+            this._startPassiveDownload();
+          }
+        }.bind(this), 500);
+      },
+
+      /**
+       * Create the `_downloadBuffer` for every column of obsel.
+       * Calls `_launchDownload`.
+       *
+       * @method _startPassiveDownload
+       */
+      _startPassiveDownload: function(){
+        // Get the begin/end of the trace.
+        // Calculate the period for each obsel column
+        var b = this.traceStats['stats:minTime'];
+        var e = this.traceStats['stats:maxTime'];
+        var c = this.$.timeline._width / (this.$.timeline._obselWidth + 2);
+        var period = Math.ceil((e-b) / c);
+        this.set('_downloadPeriod', period);
+        // Create a download buffer for each column
+        for(var i = 0 ; i < c ; i++){
+          this.push('_downloadBuffer', {
+            'b': b+(period*i),
+            'e': b+(period*i)+period,
+            'isOver': false,
+            'obsels': []
+          });
+        }
+        // Start the download
+        this._launchDownload();
+      },
+
+      /** ================================================================== **/
+      /**                               DOWNLOAD                             **/
+
+      /**
+       * Start a download of obsels. If there are some priority downlaod to do, download them first.
+       *
+       * @method _launchDownload
+       */
+      _launchDownload: function(){
+        // Update the stylesheet count.
+        this.updateStylesheetCount();
+        // If we don't have priority downloads, we download every obsel in background.
+        if(this._downloadPriority.length === 0){
+          this.$.progress.set('disable', true);
+          // Show the passive progress bar.
+          var i = 0;
+          // If the first download campaign is over, we look for the column not complete yet.
+          // Otherwise, we look for the column visited yet.
+          // When the first campaign is over , we set `_firstDownloadDone` to true, and we _launchDownload again.
+          if(this._firstDownloadDone){
+            while(i < this._downloadBuffer.length &&
+              this._downloadBuffer[i].isOver) i++;
+          }
+          else{
+            while(i < this._downloadBuffer.length &&
+              ( this._downloadBuffer[i].isOver || this._downloadBuffer[i].obsels.length !== 0 ))
+              i++;
+            if(i >= this._downloadBuffer.length){
+              this._firstDownloadDone = true;
+              this._launchDownload();
+            }
+          }
+          // If we havan't download everyhing yet, well, we get the obsels...
+          if(i < this._downloadBuffer.length){
+            this.set('_downloadCurrentBufferIndex', i);
+            // Set time
+            var b = this.traceStats['stats:minTime'];
+            b += (i * this._downloadPeriod);
+            // Set obsel
+            var uri = null;
+            if(this._downloadBuffer[i].obsels.length > 0) uri = this._downloadBuffer[i].obsels[this._downloadBuffer[i].obsels.length - 1]['@id'];
+            if(this._firstDownloadDone)
+              this._downloadObsels(b, b + this._downloadPeriod - 1, 100, uri );
+            else{
+              // If the trace has less than 1000 obsels
+              if(this.traceStats['stats:obselCount'] <= 1000){
+                this._downloadObsels(b, null, this.traceStats['stats:obselCount'] + 1, uri);
+              }
+              else{
+                this._downloadObsels(b, null, 30, uri );
+              }
+            }
+
+          }
+        }
+        else{
+          this.$.progress.set('disable', false);
+          var i = this.splice('_downloadPriority', 0, 1);
+          while(this._downloadBuffer[i].isOver)
+            i = this.splice('_downloadPriority', 0, 1);
+          this.set('_downloadCurrentBufferIndex', i);
+          // Set time
+          var b = this.traceStats['stats:minTime'];
+          b += (i * this._downloadPeriod);
+          // Set obsel
+          var uri = null;
+          if(this._downloadBuffer[i].obsels.length > 0) uri = this._downloadBuffer[i].obsels[this._downloadBuffer[i].obsels.length - 1]['@id'];
+          this._downloadObsels(b, b + this._downloadPeriod - 1, 100, uri );
+        }
+      },
+
+      /**
+       * Download the obsels.
+       *
+       * @param {!optionnal} start (Number) The begin time of the interval to download.
+       * @param {!optionnal} stop (Number) The end time of the interval to download.
+       * @param {!optionnal} limit (Number) Max count of obsel to download.
+       * @param {!optionnal} uri (Number) Uri of the start obsel.
+       *
+       * @method _downloadObsels
+       */
+      _downloadObsels: function(start, stop, limit, uri){
+        limit = limit || 100;
+        var minb  = (start) ? 'minb='+start  : '';
+        var maxe  = (stop)  ? '&maxe='+stop  : '';
+        var after = (uri)   ? '&after='+uri   : '';
+        var request = this.traceUrl + '@obsels?'+minb+after+maxe+'&limit='+limit;
+        var XMLReq = new XMLHttpRequest();
+        XMLReq.open("GET", request);
+        XMLReq.setRequestHeader('Content-Type', 'application/json');
+        XMLReq.setRequestHeader('Accept', 'application/ld+json');
+        XMLReq.withCredentials = true;
+        XMLReq.onreadystatechange = function() {
+         if (XMLReq.readyState === 4) {
+           if (XMLReq.status === 200 || XMLReq.status === 201 || XMLReq.status === 304) {
+             this._handleDownloadObselResponse(XMLReq.response, limit);
+           } else {
+             console.log(XMLReq);
+           }
+         }
+        }.bind(this);
+        XMLReq.onerror = function(err) {
+         console.log(err);
+        };
+        this.set('_xhr', XMLReq);
+        XMLReq.send(null);
+      },
+
+      /**
+       * Handle the download response. Sort the obsels in the `_downloadBuffer`.
+       * Call `_launchDownload`.
+       * Send the obsels to the timeline.
+       *
+       * @param {!required} response {Object} The response of the query.
+       *
+       * @method _handleDownloadObselResponse
+       */
+      _handleDownloadObselResponse: function(response, limit){
+        // Parse the obsels array
+        var obs = (JSON.parse(response)).obsels;
+        // Sort the obsels in the download buffer.
+        this._sortObselsInBuffer(obs, (obs.length < limit));
+        // Update the background-progress status
+        this._updateBackgroundProgress(obs.length);
+        // Relaunch the download.
+        this._launchDownload();
+        // Update the timeline obsels.
+        this.$.timeline.addObsels(this._applyStyleOnObsels(obs));
+      },
+
+      /**
+       * Sort the obsels downloaded ine hte `_downloadBuffer`.
+       *
+       * @param {!required} obs {Array} List of obsel to sort in the `_downloadBuffer`.
+       * @param {!required} overflow {Boolean} True if the request retrieve less obsels than the limit. This would mean that the corresponding obsel column is completly downloaded.
+       *
+       * @method _sortObselsInBuffer
+       */
+      _sortObselsInBuffer: function(obs, overflow){
+        var index = this.get('_downloadCurrentBufferIndex');
+        // For each obsels in obs, if it fit in a column, we add it to the column.
+        // If it doesn't fit, we set the column as "over" and increment the column position.
+        for(var i = 0; i < obs.length; i++){
+          if(this._downloadBuffer[index].b <= obs[i].end  && obs[i].end < this._downloadBuffer[index].e){
+            this._downloadBuffer[index].obsels.push(obs[i]);
+          }
+          else{
+            i--;
+            this._downloadBuffer[index].isOver = true;
+            index++;
+          }
+          // Security condition, to avoid overflow.
+          if(index > this._downloadBuffer.length){
+            i = obs.length;
+          }
+        }
+        // If we switched of obsel column
+        if(index !== this.get('_downloadCurrentBufferIndex')){
+          if(overflow) this._downloadBuffer[index].isOver = true;
+          if(this._downloadBuffer[index].obsels.length > 30) index++;
+          this.set('_downloadCurrentBufferIndex', index);
+        }
+        else{
+          if(overflow) this._downloadBuffer[index].isOver = true;
+          this.set('_downloadCurrentBufferIndex', index+1);
+        }
+      },
+
+      /**
+       * Upadte the `background-progress` status.
+       *
+       * @param {!required} count {Number} The number of obsels downloaded.
+       *
+       * @method _updateBackgroundProgress
+       */
+      _updateBackgroundProgress: function(count) {
+        this.set('_obselsCount', this.get('_obselsCount') + count);
+        var progress = Math.floor( this.get('_obselsCount') / this.traceStats['stats:obselCount'] * 100 );
+        this.$['background-progress'].set('value', progress);
+      },
+
+      /** ================================================================== **/
+      /**                                UPDATE                              **/
+
+      /**
+       * Redraw the obsels with every obsel between `_currentBegin` and `_currentEnd`.
+       *
+       * @method updateTimeline
+       */
+      updateTimeline: function(){
+        this.$.timeline.redrawObsels(this._applyStyleOnObsels(this._getObselsForCurrentBounds()));
+        this.updateStylesheetCount();
+      },
+
+      /**
+       * Update the obsel count for each rule in the stylesheet.
+       *
+       * @method updateStylesheetCount
+       */
+      updateStylesheetCount: function(){
+        if(this.boundStylesheetComponent !== null){
+          var matchs = [];
+          for(var i = 0; i < this.stylesheet.rules.length; i++)
+            matchs.push({
+              'local':   0,
+              'overall': 0
+            });
+
+          var obs = this._getObselsForCurrentBounds(this.traceStats['stats:minTime'], this.traceStats['stats:maxTime']);
+          for(var i = 0; i < obs.length; i++){
+            var index = this._getObselStyle(obs[i]);
+            if(index !== -1){
+              matchs[index].overall += 1;
+              if(this._currentBegin <= obs[i].end && obs[i].end <= this._currentEnd){
+                matchs[index].local += 1;
+              }
+            }
+          }
+          if(this.$['background-progress'].value !== 100)
+            for(var i = 0; i < this.stylesheet.rules.length; i++)
+              matchs[i].overall = '???';
+          this.boundStylesheetComponent.updateStylesheetCount(matchs);
+        }
+      },
+
+      /** ================================================================== **/
+      /**                            OBSELS STYLING                          **/
+
+      /**
+       * Set the symbol of a list of obsels according to the `stylesheet`.
+       * TODO: Set default symbol.
+       *
+       * @param {!required} list (Array) The obsels.
+       *
+       * @method _applyStyleOnObsels
+       */
+      _applyStyleOnObsels: function(list){
+        var result = [];
+        var r = this.stylesheet.rules;
+        // For every obsels, sort the list of rule following :
+        // number of type prior number of attribute prior index of rule.
+        for(var i = 0; i < list.length; i++){
+          var index = this._getObselStyle(list[i]);
+          // If the rule as a type and an attribute, we push the obsel to the result list.
+          if(index !== -1){
+            result.push({
+              'obsel': list[i],
+              'symbol': r[index].symbol,
+              'visible': r[index].visible
+            })
+          }
+        }
+        return result;
+      },
+
+      /**
+       * Return the index of the matching style of an obsel.
+       *
+       * @param {!required} obsel {String} The obsel.
+       *
+       * @method _getObselStyle
+       */
+      _getObselStyle: function(obsel) {
+        var r = this.stylesheet.rules;
+        t = [];
+        var o = {};
+        for(var j = 0; j < r.length; j++){
+          o = {'i': j, 't': 0, 'a': 0};
+          var tan = 0;
+          for(var k = 0; k < r[j].rules.length; k++){
+            var doNotMatch = false;
+            if(r[j].rules[k].type !== ""){
+              if(obsel['@type'] === r[j].rules[k].type.replace(this.trace.model_uri+"#", 'm:')){
+                o.t = 1;
+              }
+              else{
+                doNotMatch = true;
+              }
+            }
+            if(!doNotMatch){
+              for(var l = 0; l < r[j].rules[k].attributes.length; l++){
+                if(obsel[r[j].rules[k].attributes[l].uri.replace(this.trace.model_uri+"#", 'm:')] !== undefined &&
+                obsel[r[j].rules[k].attributes[l].uri.replace(this.trace.model_uri+"#", 'm:')] !== null){
+                  switch(r[j].rules[k].attributes[l].operator){
+                    case "==":
+                      if(obsel[r[j].rules[k].attributes[l].uri.replace(this.trace.model_uri+"#", 'm:')] == r[j].rules[k].attributes[l].value){
+                        o.a += 1;
+                      }
+                      else doNotMatch = true;
+                    break;
+                    case ">":
+                      if(Number(obsel[r[j].rules[k].attributes[l].uri.replace(this.trace.model_uri+"#", 'm:')]) > Number(r[j].rules[k].attributes[l].value)){
+                        o.a += 1;
+                      }
+                      else doNotMatch = true;
+                    break;
+                    case ">=":
+                      if(Number(obsel[r[j].rules[k].attributes[l].uri.replace(this.trace.model_uri+"#", 'm:')]) >= Number(r[j].rules[k].attributes[l].value)){
+                        o.a += 1;
+                      }
+                      else doNotMatch = true;
+                    break;
+                    case "<":
+                      if(Number(obsel[r[j].rules[k].attributes[l].uri.replace(this.trace.model_uri+"#", 'm:')]) < Number(r[j].rules[k].attributes[l].value)){
+                        o.a += 1;
+                      }
+                      else doNotMatch = true;
+                    break;
+                    case "<=":
+                      if(Number(obsel[r[j].rules[k].attributes[l].uri.replace(this.trace.model_uri+"#", 'm:')]) <= Number(r[j].rules[k].attributes[l].value)){
+                        o.a += 1;
+                      }
+                      else doNotMatch = true;
+                    break;
+                  }
+                }
+              }
+            }
+            if(!doNotMatch) t.push(o);
+            else{
+              t.push({'i': j, 't': 0, 'a': 0});
+            }
+          }
+        }
+        // Sort the valid symbl list according to their priority.
+        // type > attribute > position in rules.
+        t.sort(function(a, b) {
+          if(a.t === b.t){
+            if     (a.a === b.a) return (a.i > b.i) ? 1 : -1;
+            else if(a.a > b.a)   return -1;
+            else return 1;
+          }
+          else if(a.t > b.t) return -1;
+          else return 1;
+        });
+        if(t[0].a !== 0 || t[0].t !== 0) return t[0].i;
+        else return -1;
+      },
+
+      /** ================================================================== **/
+      /**                           OBSELS RETRIEVE                          **/
+
+      /**
+       * Retrieve some obsels from `_downloadBuffer` between a begin time and an end time.
+       *
+       * @param {!optionnal} b {Number} The begin time of the obsels to retrieve from `_downloadBuffer`.
+       * @param {!optionnal} e {Number} The end   time of the obsels to retrieve from `_downloadBuffer`.
+       *
+       * @method _getObselsForCurrentBounds
+       */
+      _getObselsForCurrentBounds: function(b, e){
+        // Set the begin & end
+        b = b || this._currentBegin;
+        e = e || this._currentEnd;
+        // Get the begin & end index position in the `_downloadBuffer` columns.
+        var ib = Math.floor((b-this.traceStats['stats:minTime'])/this._downloadPeriod);
+        var eb = Math.ceil((e-this.traceStats['stats:minTime']-this._downloadPeriod+1)/this._downloadPeriod);
+        // Fill obs with the matching obsels.
+        var obs = [];
+        for(var i = ib; i <= eb; i++){
+         for(var j = 0; j < this._downloadBuffer[i].obsels.length; j++){
+           if(this._downloadBuffer[i].obsels[j].end >= b && this._downloadBuffer[i].obsels[j].end <= e){
+             obs.push(this._downloadBuffer[i].obsels[j])
+           }
+         }
+        }
+        return obs;
+      },
+
+      /**
+       * Check is the columns of `_downloadBuffer` between a begin and an end are already downloaded.
+       * Returns an Array of index of the columns which need to be download. The Array is empty if there's no need to download.
+       *
+       * @param {!required} b {Number} The begin time of the column to check.
+       * @param {!required} e {Number} The end   time of the column to check.
+       *
+       * @method _isNotDownloaded
+       */
+      _isNotDownloaded: function(b, e){
+        // Get the begin & end index position in the `_downloadBuffer` columns.
+        var ib = Math.floor((b-this.traceStats['stats:minTime'])/this._downloadPeriod);
+        var eb = Math.ceil((e-this.traceStats['stats:minTime']-this._downloadPeriod+1)/this._downloadPeriod);
+        // Fill the result Array with the columns not over.
+        var result = [];
+        for(var i = ib; i <= eb; i++){
+          if(!this._downloadBuffer[i].isOver)result.push(i);
+        }
+        return result;
+      },
+
+      /** ================================================================== **/
+      /**                            EVENT HANDLERS                          **/
+
+      /**
+       * TODO.
+       *
+       * @param {!required} evt (Event) The `timeline-scroller-new-bounds` event.
+       *
+       * @method _onTimelineScrollerNewBounds
+       */
+      _onTimelineScrollerNewBounds: function(evt){
+        var b = ( evt.detail.b < this.traceStats['stats:minTime']) ? this.traceStats['stats:minTime'] : evt.detail.b;
+        var e = ( evt.detail.e > this.traceStats['stats:maxTime']) ? this.traceStats['stats:maxTime'] : evt.detail.e;
+        this.set('_currentBegin',b);
+        this.set('_currentEnd',  e);
+        this.$.timeline.setTemporalBounds(b,e);
+        this.$.timeline.addObsels(this._applyStyleOnObsels(this._getObselsForCurrentBounds()));
+        if(this._isNotDownloaded(b,e).length !== 0){
+          this.set('_downloadPriority', this._isNotDownloaded(b,e));
+        }
+        this.updateStylesheetCount();
+      },
+
+      /**
+       * TODO.
+       *
+       * @param {!required} evt (Event) The `timeline-scroller-new-bounds` event.
+       *
+       * @method _onTimelineIntervalSelected
+       */
+      _onTimelineIntervalSelected: function(evt){
+        var b = ( evt.detail.b < this.traceStats['stats:minTime']) ? this.traceStats['stats:minTime'] : evt.detail.b;
+        var e = ( evt.detail.e > this.traceStats['stats:maxTime']) ? this.traceStats['stats:maxTime'] : evt.detail.e;
+        this.set('_currentBegin',b);
+        this.set('_currentEnd',  e);
+        this.$.timeline.setTemporalBounds(b,e);
+        this.$.scroller.update(b, e);
+        this.$.timeline.addObsels(this._applyStyleOnObsels(this._getObselsForCurrentBounds()));
+        if(this._isNotDownloaded(b,e).length !== 0){
+          this.set('_downloadPriority', this._isNotDownloaded(b,e));
+        }
+        this.updateStylesheetCount();
+      },
+
+      /**
+       * .
+       *
+       * @param {!required} evt {String} The `timeline-scoller-shift` event.
+       *
+       * @method _onTimelineScrollerShift
+       */
+     _onTimelineScrollerShift: function(evt) {
+       var nb = evt.detail.nb;
+       var ne = evt.detail.ne;
+       var d  = evt.detail.d;
+       var ob = ( evt.detail.b < this.traceStats['stats:minTime']) ? this.traceStats['stats:minTime'] : evt.detail.b;
+       var oe = ( evt.detail.e > this.traceStats['stats:maxTime']) ? this.traceStats['stats:maxTime'] : evt.detail.e;
+       this.set('_currentBegin',ob);
+       this.set('_currentEnd',  oe);
+       this.$.timeline.shiftObsels(this._applyStyleOnObsels(this._getObselsForCurrentBounds(nb, ne)), d);
+       if(this._isNotDownloaded(ob,oe).length !== 0){
+         this.set('_downloadPriority', this._isNotDownloaded(b,e));
+       }
+       this.updateStylesheetCount();
+     }
+
+    });
+  </script>
+</dom-module>

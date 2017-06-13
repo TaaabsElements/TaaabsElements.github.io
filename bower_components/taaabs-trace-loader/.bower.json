@@ -1,0 +1,36 @@
+{
+  "name": "taaabs-trace-loader",
+  "description": "Helps managing the download  of a trace and its obsels.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-loader.git"
+  },
+  "main": "taaabs-trace-loader.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-loader/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-trace-loader",
+  "_release": "6339a97f7c",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "6339a97f7c63c04694413db4581ebf674fc56886"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-trace-loader.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-trace-loader"
+}

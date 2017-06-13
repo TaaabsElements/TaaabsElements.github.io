@@ -1,0 +1,30 @@
+{
+  "name": "taaabs-themes",
+  "version": "0.1.0",
+  "description": "CSS themes.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+   "type": "git",
+   "url": "https://github.com/TaaabsElements/taaabs-themes.git"
+  },
+  "main": "taaabs-theme.html",
+  "license": "https://github.com/TaaabsElements/taaabs-themes/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "neon-animation": "PolymerElements/neon-animation#<2.*",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#<2.*",
+    "paper-styles": "PolymerElements/paper-styles#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": []
+}

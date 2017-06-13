@@ -1,0 +1,36 @@
+{
+  "name": "taaabs-base-overview",
+  "description": "A graphical element that displays the list of subbase of a base or a ktbs root.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-base-overview.git"
+  },
+  "main": "taaabs-base-overview.html",
+  "license": "https://github.com/TaaabsElements/taaabs-base-overview/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-base-overview",
+  "_release": "63c13f61a2",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "63c13f61a2d11071d05d5a780060297f43b33fa6"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-base-overview.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-base-overview"
+}

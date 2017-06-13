@@ -1,0 +1,44 @@
+{
+  "name": "taaabs-trace-timeline-stylesheet",
+  "description": "A set of component for editing a stylesheet. Works in pair with a taaab-strace-timeline.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaaabsElements/taaabs-trace-timeline-stylesheet.git"
+  },
+  "main": "taaabs-trace-timeline-stylesheet.html",
+  "license": "https://github.com/TaaabsElements/taaabs-trace-timeline-stylesheet/LICENSE",
+  "dependencies": {
+    "polymer": "Polymer/polymer#<2.*",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#<2.*",
+    "iron-collapse": "PolymerElements/iron-collapse#<2.*",
+    "iron-icons": "PolymerElements/iron-icons#<2.*",
+    "iron-iconset-svg": "PolymerElements/iron-iconset-svg#<2.*",
+    "paper-button": "PolymerElements/paper-button#<2.*",
+    "paper-dialog": "PolymerElements/paper-dialog#<2.*",
+    "paper-swatch-picker": "PolymerElements/paper-swatch-picker#<2.*",
+    "taaabs-themes": "TaaabsElements/taaabs-themes"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/TaaabsElements/taaabs-trace-timeline-stylesheet",
+  "_release": "b25e4fe878",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "b25e4fe87892047951ee320d3088c91f4620b9e8"
+  },
+  "_source": "https://github.com/TaaabsElements/taaabs-trace-timeline-stylesheet.git",
+  "_target": "*",
+  "_originalSource": "TaaabsElements/taaabs-trace-timeline-stylesheet"
+}
