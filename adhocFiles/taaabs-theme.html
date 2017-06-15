@@ -1,0 +1,113 @@
+<!--
+
+# Taaabs-theme
+
+`<taaabs-theme>` is a css template for taaabs elements. It relies on the `<paper-styles>` components.
+
+## Global Styles
+
+ Class       | Effect
+ ---------   | -----------------------------------------------------
+ no-select   | Prevent touch or text selection.
+ fade        | Reduce opacity and add transition on opacity changes.
+ disable     | No pointer events.
+ clickable   | Pointer cursor.
+ hoverable   | Transition on color and background-color changes.
+ swag-scroll | Stylish scroll bar for chrome.
+
+## Tables
+
+Class     | Target     | Effect
+--------- | ---------- | ------------------------------------------------------
+clickable | tr, td, th | Transition on background color changes.
+clickable | tr, td, th | (Hover) Background color turn to <span style="background-color:#EEEEEE; padding:4px">Light Grey</span>
+
+## Sizes
+
+Class      | Target     | Effect
+---------  | ---------- | ------------------------------------------------------
+tiny       | All        | Font size 10px.
+tiny       | iron-icon  | Width & Height 14px.
+small      | All        | Font size 12px.
+small      | iron-icon  | Width & Height 16px.
+fit        | All        | Width & Height 100%.
+fit-width  | All        | Width 100%.
+fit-height | All        | Height 100%.
+
+
+## Layout
+
+Class       | Effect
+---------   | -----------------------------------------------------
+flexchild                   | [div.fleeeeeeexchild.div]
+flex-horizontal             | [div.div.div]
+flex-vertical               | [div]
+                            | [div]
+                            | [div]
+flex-center-align           | [...div...]
+flex-start-align            | [div......]
+flex-end-align              | [......div]
+flex-start-justified        | [div......] but justified :)
+flex-center-justified       | [...div...] but justified :)
+flex-end-justified          | [......div] but justified :)
+flex-equal-justified        | [.div..........div.]
+flex-equal-around-justified | [....div....div....]
+flex-reversed               | [....div3.div2.div1]
+flex-wrap                   | [div.div.div]
+                            | [div............]
+relative                    | Apply layout relative.
+
+## Colors
+
+### Font
+
+Class             | Effect
+---------         | -----------------------------------------------------
+fgSuccess         | Color turn to                    <span style="background-color:#4CAF50; padding:4px">Green</span>
+fgSuccessH        | (Hover) Color turn to            <span style="background-color:#66BB6A; padding:4px">Green</span>
+fgWarning         | Color turn to                    <span style="background-color:#FF9800; padding:4px">Orange</span>
+fgWarningH        | (Hover) Color turn to            <span style="background-color:#FFA726; padding:4px">Orange</span>
+fgError           | Color turn to                    <span style="background-color:#F44336; padding:4px; color:white">Red</span>
+fgErrorH          | (Hover) Color turn to            <span style="background-color:#EF5350; padding:4px; color:white">Red</span>
+fgLog             | Color turn to                    <span style="background-color:#2196F3; padding:4px; color:white">Blue</span>
+fgLogH            | (Hover) Color turn to            <span style="background-color:#42A5F5; padding:4px; color:white">Blue</span>
+fgWhite           | Color turn to                    <span style="background-color:#F5F5F5; padding:4px">Light Grey</span>
+fgWhiteH          | (Hover) Color turn to            <span style="background-color:#FFFFFF; padding:4px">White</span>
+fgGrey            | Color turn to                    <span style="background-color:#9E9E9E; padding:4px">Grey</span>
+fgGreyH           | (Hover) Color turn to            <span style="background-color:#BDBDBD; padding:4px">Grey</span>
+fgBlack           | Color turn to                    <span style="background-color:rgba(0,0,0,0.87); padding:4px; color:white">Black</span>
+fgBlackH          | (Hover) Color turn to            <span style="background-color:rgba(0,0,0,0.57); padding:4px; color:white">Black</span>
+
+### Background
+
+Class             | Effect
+---------         | -----------------------------------------------------
+bgSuccess         | Background-Color turn to         <span style="background-color:#4CAF50; padding:4px">Green</span>
+bgSuccessH        | (Hover) Background-Color turn to <span style="background-color:#66BB6A; padding:4px">Green</span>
+fgWarning         | Background-Color turn to         <span style="background-color:#FF9800; padding:4px">Orange</span>
+fgWarningH        | (Hover) Background-Color turn to <span style="background-color:#FFA726; padding:4px">Orange</span>
+fgError           | Background-Color turn to         <span style="background-color:#F44336; padding:4px; color:white">Red</span>
+fgErrorH          | (Hover) Background-Color turn to <span style="background-color:#EF5350; padding:4px; color:white">Red</span>
+fgLog             | Background-Color turn to         <span style="background-color:#2196F3; padding:4px; color:white">Blue</span>
+fgLogH            | (Hover) Background-Color turn to <span style="background-color:#42A5F5; padding:4px; color:white">Blue</span>
+bgDarkBlue        | Background-Color turn to         <span style="background-color:#263238; padding:4px; color:white">Blue Grey</span>
+bgDarkBlueH       | (Hover) Background-Color turn to <span style="background-color:#37474F; padding:4px; color:white">Blue Grey</span>
+bgLightGrey100    | Background-Color turn to         <span style="background-color:#F5F5F5; padding:4px">Light Grey</span>
+bgLightGrey100H   | (Hover) Background-Color turn to <span style="background-color:#EEEEEE; padding:4px">Light Grey</span>
+
+-->
+<dom-module id="taaabs-theme">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'taaabs-theme'
+    });
+  </script>
+</dom-module>

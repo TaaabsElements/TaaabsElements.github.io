@@ -785,7 +785,10 @@
 
 
       _generateIronComponentPage: function(){
-        this.$['component-page'].set('src', 'bower_components/'+this.componentName.name+'/'+this.componentName.name+'.html');
+        if(this.componentName.name === "taaabs-themes"){
+          this.$['component-page'].set('src', 'adhocFiles/taaabs-theme.html');
+        }
+        else this.$['component-page'].set('src', 'bower_components/'+this.componentName.name+'/'+this.componentName.name+'.html');
       },
 
       /**
