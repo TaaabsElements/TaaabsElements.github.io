@@ -1,18 +1,41 @@
-<!-- THEME -->
-<link rel="import" href="../taaabs-themes/taaabs-dark-theme.html">
-<!-- GRAPH LIBRARY -->
-<link rel="import" href="../sigma-js-component/sigma-js-component.html">
-<!-- Iron elements -->
+<link rel="import" href="../cytoscape-component/cytoscape-component.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<!-- ENOUGH WITH THE DEPENDENCIES !! -->
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<!--
+
+# taaabs-base-graph
+
+`<taaabs-base-graph>` is a graphical element that displays a kTBS base graph.
+
+In typical use, bind the `<taaabs-base-graph>` to a base url.
+
+    <taaabs-base-graph id="base-graph"
+                       base-url="[[baseUrl]]"
+                       taaabs-central-loading
+                       bg-color="#2e3842"
+                       language="en"
+                       style="height: 500px">
+    </taaabs-base-graph>
+
+or
+        var elem = new TAAABS.BaseGraph("the_base_url");
+
+----
+
+## TODO
+
+  - Selectable nodes.
+
+ -->
 <dom-module id="taaabs-base-graph">
   <template>
-    <style include="taaabs-dark-theme"></style>
+    <style include="taaabs-theme"></style>
     <style>
       :host {
         display: block;
+        padding: 0;
       }
       :host #legend {
         float: right;
@@ -29,28 +52,14 @@
         opacity: 0.87;
         cursor: pointer;
         color: white;
-        -moz-transition: all 0.25s ease;
-        -webkit-transition: all 0.25s ease;
-        -o-transition: all 0.25s ease;
-        transition: all 0.25s ease;
       }
       :host #refreshIcon:hover {
         opacity: 1;
       }
-      .flex-horizontal {
-        @apply(--layout-horizontal);
-      }
-      .flexchild {
-        @apply(--layout-flex);
-      }
     </style>
-    <div class="flex-horizontal">
-      <div class="flexchild">
-        <input placeholder="search" class="inputWithIcon bgDarkBlue fgWhite" style="outline:0" value="{{_searchNode::input}}">
-        </input>
-      </div>
-      <div class="bgDarkBLue" style="border-bottom: solid 1px grey; border-left: solid 1px grey">
-        <iron-icon id="refreshIcon" on-click="refresh" icon='icons:autorenew'></iron-icon>
+    <div class="fit-width flex-horizontal bgDarkBlue fgWhite">
+      <div class="flexchild flex-reversed">
+         <iron-icon id="refreshIcon" on-click="refresh" icon='icons:autorenew'></iron-icon>
       </div>
     </div>
     <div></div>
@@ -73,81 +82,36 @@
           <span>{{localize('st')}}</span>
           <iron-icon style="color:#03A9F4; height: 16px; margin: 2px" icon='icons:radio-button-checked'></iron-icon>
         </div>
+        <div>
+          <span>{{localize('method')}}</span>
+          <iron-icon style="color:#9C27B0; height: 16px; margin: 2px" icon='icons:radio-button-checked'></iron-icon>
+        </div>
       </div>
     </div>
     <!-- Graph Component -->
-    <sigma-js-component id="sjc" width="[[width]]" height="[[height]]" bg-color="[[bgColor]]">
-    </sigma-js-component>
+    <div class="bgDarkBlue">
+      <div id="loading-text" class="fgGrey bgDarkBlue fit flex-horizontal flex-equal-around-justified flex-center-align">
+        LOADING GRAPH
+      </div>
+      <cytoscape-component id="cytoscape-component">
+      </cytoscape-component>
+    </div>
   </template>
 
   <script>
-    Polymer({
+    TAAABS.BaseGraph = Polymer({
       is: "taaabs-base-graph",
 
       /**
        * Fired when the graph is loaded and displayed.
        *
-       * @event REFRESHED
+       * @event refreshed
        */
 
       properties: {
 
-        /**
-         * Background color of the graph.
-         *
-         * @attribute bgColor
-         * @type String
-         */
-        bgColor: {
-          type: String,
-          value: "#1e1e1e"
-        },
-
-        /**
-         * Height of the graph canvas.
-         *
-         * @attribute height
-         * @type String
-         */
-        height: {
-          type: String,
-          value: "500px"
-        },
-
-        /**
-         * Width of the graph canvas.
-         *
-         * @attribute width
-         * @type String
-         */
-        width: {
-          type: String,
-          value: "100%"
-        },
-
-        /**
-         * An interval spinning the refresh icon.
-         *
-         * @attribute _loadingInterval
-         * @type Object
-         */
-        _loadingInterval: {
-          type: Object,
-          notify: true,
-          value: {}
-        },
-
-        /**
-         * The refresh icon css angle.
-         *
-         * @attribute _loadingAngle
-         * @type Number
-         */
-        _loadingAngle: {
-          type: Number,
-          notify: true,
-          value: 0
-        },
+        /** ================================================================ **/
+        /**  Public Properties                                               **/
 
         /**
          * Set to true if the taaabs-base-overview must work with a `taaabs-resource-loader`. False otherwise.
@@ -172,6 +136,9 @@
           notify: true,
           value: null
         },
+
+        /** ================================================================ **/
+        /**  Private Properties                                              **/
 
         /**
          * The root base object.
@@ -317,18 +284,11 @@
        */
       refresh: function() {
         if (this.baseUrl) {
-          // The interval that rotate the refresh button
-          this._loadingInterval = setInterval(function() {
-            this.transform('rotate(' + this._loadingAngle + 'deg)', this.$.refreshIcon);
-            this.set('_loadingAngle', this._loadingAngle + 15);
-          }.bind(this), 50);
-
           // init _resources, _base, et the graph component
           this.set('_resources', []);
           this.set('_base', null);
-          this.$.sjc.setGraph();
-
-          // GET or UPDATE _base.
+          this.$['cytoscape-component'].init();
+          // Loads the root base.
           this.fire('UPDATE_RESOURCE', {
             url: this.baseUrl,
             obj: '_base'
@@ -337,7 +297,7 @@
       },
 
       /**
-       * Triggered when `_base` changes. Load every resources from the base (and its inner bases).
+       * Called when `_base` changes. Load every resources from the base (and its inner bases).
        *
        * @method refresh
        */
@@ -372,7 +332,7 @@
        */
       _loadResources: function(base) {
         // Load every resources ( and their following properties ) from the base.
-        base.load_properties(['obselCount', 'hasModel', 'label', 'hasSource'])
+        base.load_properties(['obselCount', 'hasModel', 'label', 'hasSource', 'hasMethod'])
           .then(function(resources) {
             // If their are resources in the base,
             // we push them into _resources.
@@ -412,7 +372,6 @@
         // Init the node map , and the reverse node map.
         this.set('_nodeMap', new Map());
         this.set('_rNodeMap', new Map());
-
         for (var i in resources) {
           // Create a node with rendom x & y position (for better perf on force layout).
           var node = {
@@ -425,24 +384,25 @@
           // Set a different color for each type of resource.
           switch (resources[i]['@type']) {
             case "TraceModel":
-              node.color = node.originalColor = '#F4D03F';
+              node.color = node.originalColor = '#FFC107';
               node.size = 2;
               break;
             case "StoredTrace":
-              node.color = node.originalColor = '#81CFE0';
+              node.color = node.originalColor = '#03A9F4';
               node.size = 1;
               break;
             case "ComputedTrace":
-              node.color = node.originalColor = '#446CB3';
+              node.color = node.originalColor = '#2196F3';
               node.size = 1;
               break;
             case "Base":
-              node.color = node.originalColor = '#F2784B';
+              node.color = node.originalColor = '#FF5722';
               node.size = 3;
               break;
           }
           // Add the node to the graph.
-          this.$.sjc.addNode(node);
+          //this.$.sjc.addNode(node);
+          this.$['cytoscape-component'].addNode(node.id, node.label, {'background-color':node.color});
           // Add the node the the maps.
           this._nodeMap.set(resources[i].uri, node.id);
           this._rNodeMap.set(node.id, resources[i]);
@@ -453,7 +413,9 @@
         this._displayTreeGraph();
         // We stop the rotating refresh button
         clearInterval(this._loadingInterval);
+        this.$['cytoscape-component'].layout();
         // We notify the parent that we're done refreshing.
+        this.$['loading-text'].style.display = "none";
         this.fire('refreshed');
       },
 
@@ -480,7 +442,8 @@
                   "id": 'e' + this._edges.length,
                   "source": this._nodeMap.get(sourceUri),
                   "target": this._nodeMap.get(resUri),
-                  "_type": "Resource_to_TraceSource"
+                  "label": this._resources[i].hasMethod,
+                  "background-color": "#9C27B0"
                 };
                 _unique = false;
                 this.push('_edges', e);
@@ -495,7 +458,8 @@
                 "id": 'e' + this._edges.length,
                 "source": this._nodeMap.get(modelUri),
                 "target": this._nodeMap.get(resUri),
-                "_type": "Resource_to_TraceModel"
+                "_type": "Resource_to_TraceModel",
+                "label": ""
               };
               _unique = false;
               this.push('_edges', e);
@@ -507,7 +471,8 @@
               "id": 'e' + this._edges.length,
               "source": this._nodeMap.get(baseUri),
               "target": this._nodeMap.get(resUri),
-              "_type": "Resource_to_Base"
+              "_type": "Resource_to_Base",
+              "label": ""
             };
             if (_unique)
               e._unique = true;
@@ -525,10 +490,15 @@
         var _edges = [];
         for (var i = 0; i < this._edges.length; i++) {
           if (this._edges[i]._type !== "Resource_to_Base" || this._edges[i]._unique)
-            _edges.push(this._edges[i]);
+            //_edges.push(this._edges[i]);
+            this.$['cytoscape-component'].addEdge( this._edges[i].id,
+                                                   this._edges[i].source,
+                                                   this._edges[i].target,
+                                                   this._edges[i].label,
+                                                   {"background-color": this._edges[i]['background-color']});
         }
-        this.$.sjc.setEdges(_edges);
-        this.$.sjc.forceAtlas2();
+        //this.$.sjc.setEdges(_edges);
+        //this.$.sjc.forceAtlas2();
       },
 
       /**
@@ -540,7 +510,7 @@
         // If the research value is empty , we reset the graph display
         // Otherwise, we emphasize the corresponding nodes.
         if (this._searchNode === "") {
-          this.$.sjc.resetNodesColor();
+          //this.$.sjc.resetNodesColor();
         } else {
           var _nodes = [];
           var _rNodes = [];
